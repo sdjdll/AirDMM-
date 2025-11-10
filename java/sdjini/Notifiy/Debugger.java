@@ -1,13 +1,10 @@
-package sdjini.Notifiy;
+package sdjini.Notify;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.IOException;
-
-import sdjini.Notifiy.Dog.Log;
-import sdjini.Notifiy.Dog.Logger;
+import sdjini.Notify.Dog.Logger;
 
 public class Debugger extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package sdjini.Notifiy.Dog;
+package sdjini.Notify.Dog;
 
 import android.app.Activity;
 
@@ -13,10 +13,14 @@ public class Log {
     protected String Tag;
     protected String Message;
 
-    private String updateTime(){
+//    public String updateTime(){
+//        Date date = new Date();
+//        this.Time = MessageFormat.format("[{0}/{1}/{2} {3}:{4}:{5}]",date.getYear(),date.getMonth(),date.getDay(),date.getHours(),date.getMinutes(),date.getSeconds());
+//        return this.Time;
+//    }
+    public void updateTime(){
         Date date = new Date();
-        this.Time = MessageFormat.format("[{0}/{1}/{2} {3}:{4}:{5}]",date.getYear(),date.getMonth(),date.getDay(),date.getHours(),date.getMinutes(),date.getSeconds());
-        return this.Time;
+        this.Time = MessageFormat.format("[{0}/{1}/{2} {3}:{4}:{5}]",date.getYear() - 100,date.getMonth()+1,date.getDate(),date.getHours(),date.getMinutes(),date.getSeconds());
     }
 
     protected Log(Activity Activity){

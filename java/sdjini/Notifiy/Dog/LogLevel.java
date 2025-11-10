@@ -1,9 +1,15 @@
-package sdjini.Notifiy.Dog;
+package sdjini.Notify.Dog;
 
 public enum LogLevel {
-    step,
-    debug,
-    info,
-    error,
-    fatal
+    step(0),
+    debug(1),
+    info(2),
+    error(3),
+    fatal(4);
+
+    private final int level;
+    LogLevel(int level) {
+        this.level = level;
+    }
+
 }

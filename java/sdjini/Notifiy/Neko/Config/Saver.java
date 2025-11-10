@@ -1,12 +1,12 @@
-package sdjini.Notifiy.Neko.Config;
+package sdjini.Notify.Neko.Config;
 
 import static android.content.Context.MODE_PRIVATE;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
 
-import sdjini.Notifiy.Dog.LogLevel;
-import sdjini.Notifiy.Dog.Logger;
+import sdjini.Notify.Dog.LogLevel;
+import sdjini.Notify.Dog.Logger;
 
 public class Saver {
     private Activity activity;

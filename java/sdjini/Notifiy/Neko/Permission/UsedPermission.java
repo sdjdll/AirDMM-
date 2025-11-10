@@ -1,4 +1,4 @@
-package sdjini.Notifiy.Neko.Permission;
+package sdjini.Notify.Neko.Permission;
 
 public enum UsedPermission {
     SYSTEM_ALERT_WINDOW,

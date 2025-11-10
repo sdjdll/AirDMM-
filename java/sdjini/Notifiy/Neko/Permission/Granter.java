@@ -1,6 +1,4 @@
-package sdjini.Notifiy.Neko.Permission;
-
-import static androidx.core.app.ActivityCompat.startActivityForResult;
+package sdjini.Notify.Neko.Permission;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,8 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Settings;
 
-import sdjini.Notifiy.Dog.LogLevel;
-import sdjini.Notifiy.Dog.Logger;
+import sdjini.Notify.Dog.LogLevel;
+import sdjini.Notify.Dog.Logger;
 
 public class Granter {
     private final Context context;
@@ -23,7 +21,7 @@ public class Granter {
     public void SystemAlertWindow(){
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:" + this.activity.getPackageName()));
-        this.context.startService(intent);
+        this.context.startActivity(intent);
         logger.write(LogLevel.info,"Permission",String.format("%s Grant", UsedPermission.SYSTEM_ALERT_WINDOW));
     }
     public void BindNotificationListenerService(){

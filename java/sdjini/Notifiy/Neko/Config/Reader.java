@@ -1,4 +1,4 @@
-package sdjini.Notifiy.Neko.Config;
+package sdjini.Notify.Neko.Config;
 
 public class Reader {
 }
