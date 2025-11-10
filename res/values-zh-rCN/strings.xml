@@ -7,4 +7,5 @@
     <string name="Start">开始</string>
     <string name="Stop">停止</string>
     <string name="Restart">重启</string>
+    <string name="SaveConfig">保存配置</string>
 </resources>
