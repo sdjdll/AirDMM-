@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">航空万用表</string>
+    <string name="DelayTime">通知显示时间</string>
+    <string name="WaitingAlpha">待机透明度</string>
+    <string name="ActiveAlpha">活动透明度</string>
+    <string name="Start">开始</string>
+    <string name="Stop">停止</string>
+    <string name="Restart">重启</string>
+</resources>

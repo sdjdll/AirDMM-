@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_wait">#2000</color>
+    <color name="background_active">#7000</color>
+    <color name="title_wait">#7777</color>
+    <color name="title_active">#ffff</color>
+    <color name="context_wait">#7777</color>
+    <color name="context_active">#ffff</color>
+</resources>
