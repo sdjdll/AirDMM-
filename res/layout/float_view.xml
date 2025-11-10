@@ -15,14 +15,14 @@
         tools:layout_editor_absoluteX="1dp">
 
         <TextView
-            android:id="@+id/Lb_Title"
+            android:id="@+id/Tv_Title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Title"
             android:textColor="@color/title_wait" />
 
         <TextView
-            android:id="@+id/Lb_Context"
+            android:id="@+id/Tv_Context"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Context"
