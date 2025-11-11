@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Air-DMM</string>
+    <string name="app_name">AirDMM!</string>
     <string name="DelayTime">DelayTime</string>
-    <string name="WaitingAlpha">WaitingAlpha</string>
-    <string name="ActiveAlpha">ActiveAlpha</string>
+    <string name="WaitingAlpha">WaitingColor</string>
+    <string name="ActiveAlpha">ActiveColor</string>
     <string name="Start">Start</string>
     <string name="Stop">Stop</string>
     <string name="Restart">Restart</string>

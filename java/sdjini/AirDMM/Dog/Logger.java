@@ -6,23 +6,24 @@ import android.content.Context;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.util.Locale;
 
 import sdjini.AirDMM.Setting;
 
 public class Logger {
     private Activity Activity;
-    private Context Context;
-    private String ClassName;
-    private Date Date;
-    private Log Log;
-    private File LogPath;
+    private final Context Context;
+    private final String ClassName;
+    private final Log Log;
+    private final File LogPath;
     public Logger(Activity Activity) {
         this.Activity = Activity;
         this.Context = this.Activity;
         this.ClassName = this.Activity.getLocalClassName();
         this.Log = new Log(this.Activity, this.ClassName);
-        this.LogPath = new File(this.Activity.getFilesDir(),"log.csv");
+        ZonedDateTime zdt = ZonedDateTime.now();
+        this.LogPath = new File(this.Context.getFilesDir(),String.format(Locale.CHINA,"%s-%02d-%02d.csv",zdt.getYear(),zdt.getMonthValue(),zdt.getDayOfMonth()));
         try {
             if (!this.LogPath.exists()) this.LogPath.createNewFile();
         } catch (IOException e) {
@@ -30,11 +31,11 @@ public class Logger {
         }
     }
     public Logger(Context Context, String ClassName){
-        this.Activity = null;
         this.Context = Context;
         this.ClassName = ClassName;
-        this.Log = new Log(this.Activity, this.ClassName);
-        this.LogPath = new File(this.Context.getFilesDir(),"log.csv");
+        this.Log = new Log(this.Context, this.ClassName);
+        ZonedDateTime zdt = ZonedDateTime.now();
+        this.LogPath = new File(this.Context.getFilesDir(),String.format(Locale.CHINA,"%s-%02d-%02d.csv",zdt.getYear(),zdt.getMonthValue(),zdt.getDayOfMonth()));
         try {
             if (!this.LogPath.exists()) this.LogPath.createNewFile();
         } catch (IOException e) {
@@ -80,23 +81,29 @@ public class Logger {
     }
     private void writeLog() {
             this.Log.updateTime();
+            String logText = (String.join(
+                    ",",
+                    this.Log.Time,
+                    this.Log.level.name(),
+                    String.format(this.Log.Activity == null ? "Context: %s" : "Activity: %s", this.Log.Activity == null ? this.Log.Context : this.Log.Activity),
+                    String.format("Class: %s", this.Log.Class),
+                    this.Log.Tag,
+                    this.Log.Message
+            ) + "\n");
             try {
                 if (!this.LogPath.exists()) this.LogPath.createNewFile();
-                    FileOutputStream fos = new FileOutputStream(LogPath, true);
-                fos.write(
-                        (String.join(
-                                ",",
-                                this.Log.Time,
-                                this.Log.level.name(),
-                                String.format("Activity: %s", this.Log.Activity),
-                                String.format("Class: %s", this.Log.Class),
-                                this.Log.Tag,
-                                this.Log.Message
-                        ) + "\n").getBytes()
-                );
+                FileOutputStream fos = new FileOutputStream(LogPath, true);
+                fos.write(logText.getBytes());
                 fos.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+            switch (this.Log.level){
+                case step -> android.util.Log.v(this.Log.Tag,this.Log.Message);
+                case debug -> android.util.Log.d(this.Log.Tag,this.Log.Message);
+                case info -> android.util.Log.i(this.Log.Tag, this.Log.Message);
+                case error -> android.util.Log.e(this.Log.Tag, this.Log.Message);
+                case fatal -> android.util.Log.wtf(this.Log.Tag,this.Log.Message);
             }
     }
 }

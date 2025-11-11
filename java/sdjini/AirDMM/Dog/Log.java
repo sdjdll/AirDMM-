@@ -1,26 +1,27 @@
 package sdjini.AirDMM.Dog;
 
 import android.app.Activity;
+import android.content.Context;
 
 import java.text.MessageFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class Log {
     protected String Time;
     protected String Class;
     protected Activity Activity;
+    protected Context Context;
     protected LogLevel level;
     protected String Tag;
     protected String Message;
 
-//    public String updateTime(){
-//        Date date = new Date();
-//        this.Time = MessageFormat.format("[{0}/{1}/{2} {3}:{4}:{5}]",date.getYear(),date.getMonth(),date.getDay(),date.getHours(),date.getMinutes(),date.getSeconds());
-//        return this.Time;
-//    }
-    public void updateTime(){
-        Date date = new Date();
-        this.Time = MessageFormat.format("[{0}/{1}/{2} {3}:{4}:{5}]",date.getYear() - 100,date.getMonth()+1,date.getDate(),date.getHours(),date.getMinutes(),date.getSeconds());
+public void updateTime(){
+        ZonedDateTime date = ZonedDateTime.now();
+        this.Time = String.format(Locale.CHINA,"[%s/%02d/%02d %02d:%02d:%02d]",date.getYear() ,date.getMonthValue(),date.getDayOfMonth(),date.getHour(),date.getMinute(),date.getSecond());
     }
 
     protected Log(Activity Activity){
@@ -29,22 +30,28 @@ public class Log {
         this.Activity = Activity;
         this.Class = this.Activity.getLocalClassName();
     }
+    protected Log(Activity Activity, String Class){
+        this.Tag = "Unknow";
+        this.level = LogLevel.step;
+        this.Activity = Activity;
+        this.Class = Class;
+    }
     protected Log(Activity Activity, LogLevel level){
         this.Tag = "Unknow";
         this.level = level;
         this.Activity = Activity;
         this.Class = this.Activity.getLocalClassName();
     }
-    protected Log(Activity Activity, String Class){
-        this.Tag = "Unknow";
-        this.level = null;
-        this.Activity = Activity;
-        this.Class = Class;
-    }
     protected Log(Activity Activity, String Class, LogLevel level){
         this.Tag = "Unknow";
         this.level = level;
         this.Activity = Activity;
+        this.Class = Class;
+    }
+    protected Log(Context Context, String Class){
+        this.Tag = "Unknow";
+        this.level = LogLevel.step;
+        this.Context = Context;
         this.Class = Class;
     }
 

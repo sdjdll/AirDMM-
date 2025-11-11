@@ -17,6 +17,7 @@ public class Granter {
         this.activity = activity;
         this.context = this.activity;
         logger = new Logger(this.activity, this.getClass().getName());
+        logger.write(LogLevel.info,"Initialize","Granter Initialized");
     }
     public void SystemAlertWindow(){
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -27,5 +28,6 @@ public class Granter {
     public void BindNotificationListenerService(){
         Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         this.activity.startActivityForResult(intent, 0);
+        logger.write(LogLevel.info,"Permission",String.format("%s Grant", UsedPermission.BIND_NOTIFICATION_LISTENER_SERVICE));
     }
 }

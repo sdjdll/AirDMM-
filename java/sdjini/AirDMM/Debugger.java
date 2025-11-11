@@ -13,6 +13,5 @@ public class Debugger extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.debugger);
         Logger logger = new Logger(this);
-
     }
 }

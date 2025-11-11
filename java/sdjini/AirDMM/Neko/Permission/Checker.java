@@ -23,6 +23,7 @@ public class Checker {
         this.activity = activity;
         this.context = this.activity;
         this.logger = new Logger(this.activity, this.getClass().getName());
+        logger.write(LogLevel.info,"Initialize","Checker Initialized");
     }
 
     public boolean SystemAlertWindow() {
@@ -36,7 +37,6 @@ public class Checker {
         return NotificationManagerCompat.getEnabledListenerPackages(this.context).contains(this.context.getPackageName());
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.P)
     public boolean ForegroundService(){
         logger.write(LogLevel.info, "Permission", (ContextCompat.checkSelfPermission(this.context, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) ? String.format("%s granted", UsedPermission.FOREGROUND_SERVICE) : String.format("%s not granted", UsedPermission.FOREGROUND_SERVICE));
         return ContextCompat.checkSelfPermission(this.context, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED;

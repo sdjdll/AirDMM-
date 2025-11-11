@@ -6,26 +6,24 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background_wait"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="1dp">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/Tv_Title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Title"
-            android:textColor="@color/title_wait" />
+            android:text="Title" />
 
         <TextView
             android:id="@+id/Tv_Context"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Context"
-            android:textColor="@color/context_wait" />
+            android:text="Context" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
