@@ -7,9 +7,9 @@ import android.content.SharedPreferences;
 import sdjini.AirDMM.Dog.Logger;
 
 public class Reader {
-    private SharedPreferences sharedPreferences;
+    private final SharedPreferences sharedPreferences;
     private final Context context;
-    private Logger logger;
+    private final Logger logger;
     public Reader(Activity activity, String sharedPreferencesName){
         this.context = activity;
         logger = new Logger(this.context, this.getClass().getName());
@@ -31,5 +31,9 @@ public class Reader {
     public int getInt(String key){
         logger.write("SharedPreferences", "get Shared Preferences");
         return sharedPreferences.getInt(key, 0);
+    }
+    public boolean getBoolean(String key){
+        logger.write("SharedPreferences", "get Shared Preferences");
+        return sharedPreferences.getBoolean(key, false);
     }
 }

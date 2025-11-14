@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- ✅ 权限声明保持不变 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:icon="@drawable/ic_launcher_background"
@@ -10,11 +14,34 @@
         android:roundIcon="@drawable/ic_launcher_background"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight">
+
+        <!-- ✅ 修正后的 NotifyGuard 服务 -->
+        <service
+            android:name=".Neko.KeepAlive.NotifyGuard"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+
+            <!-- ✅ 1. 移除了错误的 android:permission -->
+            <!-- ✅ 2. 添加了必需的 property 标签 -->
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="该服务作为核心服务的守护进程，用于监视和重启主服务，确保应用的稳定性。" />
+
+        </service>
+
+        <!-- ✅ Notify 服务的声明基本正确，但建议也加上 property -->
         <service
             android:name=".Notify"
             android:enabled="true"
             android:exported="true"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:foregroundServiceType="specialUse">
+
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="该服务用于监听系统通知，并启动守护服务以确保核心功能在后台持续运行。" />
+
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
@@ -22,23 +49,17 @@
 
         <activity
             android:name=".Debugger"
-            android:exported="false">
-<!--                        android:exported="true"-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
+            android:exported="false" />
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-        </activity>
         <activity
             android:name=".Setting"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

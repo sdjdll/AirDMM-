@@ -13,30 +13,40 @@ public class Saver {
     private Activity activity;
     private final Context context;
     private final Logger logger;
-    public Saver(Activity activity){
+    private final String PerfName;
+    public Saver(String PerfName,Activity activity){
+        this.PerfName = PerfName;
         this.activity = activity;
         this.context = this.activity;
         this.logger = new Logger(this.activity, this.getClass().getName());
         logger.write(LogLevel.info,"Initialize","Saver Initialized");
     }
-    public Saver(Context context){
+    public Saver(String PerfName,Context context){
+        this.PerfName = PerfName;
         this.context = context;
         this.logger = new Logger(this.context, this.getClass().getName());
         logger.write(LogLevel.info,"Initialize","Saver Initialized");
     }
-    public void saveString(String PerfName, String Key, String Value){
+    public void saveString(String Key, String Value){
         SharedPreferences sharedPreferences = this.context.getSharedPreferences(PerfName, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(Key, Value);
         if(editor.commit()) logger.write(LogLevel.info, "Pref", String.format("%s write done, %s:%s", PerfName, Key, Value));
         else logger.write(LogLevel.error, "Pref", String.format("%s write error", PerfName));
     }
-    public void saveInt(String PerfName, String Key, int Value){
+    public void saveInt(String Key, int Value){
         SharedPreferences sharedPreferences = this.context.getSharedPreferences(PerfName, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(Key, Value);
         editor.apply();
         if(editor.commit()) logger.write(LogLevel.info, "Pref", String.format("%s write done, %s:%d", PerfName, Key, Value));
+        else logger.write(LogLevel.error, "Pref", String.format("%s write error", PerfName));
+    }
+    public void saveBoolean(String Key, boolean Value){
+        SharedPreferences sharedPreferences = this.context.getSharedPreferences(PerfName, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(Key, Value);
+        if(editor.commit()) logger.write(LogLevel.info, "Pref", String.format("%s write done, %s:%s", PerfName, Key, Value));
         else logger.write(LogLevel.error, "Pref", String.format("%s write error", PerfName));
     }
 }
