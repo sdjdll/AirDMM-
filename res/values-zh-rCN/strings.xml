@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">航空万用表</string>
+    <string name="app_name">AirDMM!</string>
     <string name="DelayTime">通知显示时间</string>
     <string name="WaitingAlpha">待机颜色</string>
     <string name="ActiveAlpha">活动颜色</string>
@@ -8,4 +8,6 @@
     <string name="Stop">停止</string>
     <string name="Restart">重启</string>
     <string name="SaveConfig">保存配置</string>
+    <string name="KeyWord">关键字</string>
+    <string name="PodPackage">允许发布通知的应用包名</string>
 </resources>

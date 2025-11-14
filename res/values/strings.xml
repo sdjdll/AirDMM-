@@ -7,4 +7,6 @@
     <string name="Stop">Stop</string>
     <string name="Restart">Restart</string>
     <string name="SaveConfig">SaveConfig</string>
+    <string name="KeyWord">KeyWord</string>
+    <string name="PodPackage">Post on DMM Package</string>
 </resources>
