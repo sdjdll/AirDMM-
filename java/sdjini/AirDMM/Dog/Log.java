@@ -3,12 +3,8 @@ package sdjini.AirDMM.Dog;
 import android.app.Activity;
 import android.content.Context;
 
-import java.text.MessageFormat;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class Log {
     protected String Time;

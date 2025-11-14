@@ -20,19 +20,21 @@ import sdjini.AirDMM.Neko.Permission.Granter;
 
 public class Setting extends AppCompatActivity {
     public static LogLevel outputLevel = LogLevel.step;
-    public Activity MainActivity;
+    public static Activity MainActivity;
 
     private Logger logger;
+    private Saver notifyFloatWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        this.MainActivity = this;
         this.logger = new Logger(this, this.getClass().getName());
-
-        logger.write(LogLevel.step,"Initialize","Logger Initialized");
         logger.write(LogLevel.step, "Initialize", "Initialize Start");
+        logger.write(LogLevel.step,"Initialize","Logger Initialized");
+
+        notifyFloatWindow = new Saver("notifyFloatWindow",this);
+        MainActivity = this;
+
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_setting);
@@ -74,16 +76,8 @@ public class Setting extends AppCompatActivity {
         logger.write(LogLevel.step,"BtnAct","Act_BtnStart");
         if(!Notify.floatWindowOn) {
             Notify.floatWindowOn = true;
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                PixelFormat.TRANSLUCENT
-            );
-            params.gravity = Gravity.CENTER_VERTICAL;
-
-            Notify.floatWindow.addView(Notify.floatView, params);
+            notifyFloatWindow.saveBoolean("floatWindowOn",Notify.floatWindowOn);
+            Notify.setNotifyFloatWindow(Notify.floatWindowOn);
             logger.write(LogLevel.info, "BtnAct", "floatWindow Done");
         }
     }
@@ -91,6 +85,8 @@ public class Setting extends AppCompatActivity {
         logger.write(LogLevel.step,"BtnAct","Act_BtnStop");
         if (Notify.floatWindowOn){
             Notify.floatWindowOn = false;
+            notifyFloatWindow.saveBoolean("floatWindowOn",Notify.floatWindowOn);
+            Notify.setNotifyFloatWindow(Notify.floatWindowOn);
             Notify.floatWindow.removeView(Notify.floatView);
             logger.write(LogLevel.info,"BtnAct","floatWindow closed");
         }
@@ -109,17 +105,15 @@ public class Setting extends AppCompatActivity {
         EditText Et_DelayTime = findViewById(R.id.Et_DelayTime);
         logger.write(LogLevel.info, "BtnAct","Get Widgets");
 
-        Saver configSaver = new Saver(this);
+        Saver configSaver = new Saver("FloatView", this);
         logger.write(LogLevel.step, "BtnAct", "new ConfigSaver");
 
         String ActiveAlpha = String.valueOf(Et_ActiveAlpha.getText());
         String WaitingAlpha = String.valueOf(Et_WaitingAlpha.getText());
         int DelayTime = Integer.parseInt(String.valueOf(Et_DelayTime.getText()));
-        if (!ActiveAlpha.isEmpty()) configSaver.saveString("FloatView", "ActiveAlpha", ActiveAlpha);
-        if (!WaitingAlpha.isEmpty()) configSaver.saveString("FloatView", "WaitingAlpha", WaitingAlpha);
-        if (DelayTime != 0) configSaver.saveInt("FloatView", "DelayTime", DelayTime);
+        if (!ActiveAlpha.isEmpty()) configSaver.saveString("ActiveAlpha", ActiveAlpha);
+        if (!WaitingAlpha.isEmpty()) configSaver.saveString("WaitingAlpha", WaitingAlpha);
+        if (DelayTime != 0) configSaver.saveInt("DelayTime", DelayTime);
         logger.write(LogLevel.info, "BtnAct", "Config Save Done");
     }
 }
-
-
