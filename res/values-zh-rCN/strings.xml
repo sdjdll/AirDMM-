@@ -9,5 +9,9 @@
     <string name="Restart">重启</string>
     <string name="SaveConfig">保存配置</string>
     <string name="KeyWord">关键字</string>
-    <string name="PodPackage">允许发布通知的应用包名</string>
+    <string name="PodPackage">POD包名</string>
+    <string name="BlackMode">黑名单模式</string>
+    <string name="PodBM">POD黑名单模式</string>
+    <string name="KwBM">关键字黑名单模式</string>
+    <string name="Pod">POD(Post on DMM): "在悬浮窗上显示"</string>
 </resources>

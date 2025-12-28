@@ -8,5 +8,9 @@
     <string name="Restart">Restart</string>
     <string name="SaveConfig">SaveConfig</string>
     <string name="KeyWord">KeyWord</string>
-    <string name="PodPackage">Post on DMM Package</string>
+    <string name="PodPackage">POD Package</string>
+    <string name="BlackMode">BlackMode</string>
+    <string name="PodBM">POD Package Blacklist Mode</string>
+    <string name="KwBM">Keywords Blacklist Mode</string>
+    <string name="Pod">POD mean "Post on DMM"</string>
 </resources>

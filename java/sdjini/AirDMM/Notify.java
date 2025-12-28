@@ -1,6 +1,5 @@
 package sdjini.AirDMM;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,7 +9,6 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -29,17 +27,22 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import sdjini.AirDMM.Dog.LogLevel;
 import sdjini.AirDMM.Dog.Logger;
+import sdjini.AirDMM.Neko.Config.Configure;
 import sdjini.AirDMM.Neko.Config.Reader;
 import sdjini.AirDMM.Neko.KeepAlive.NotifyGuard;
 
 public class Notify extends NotificationListenerService {
     public static WindowManager floatWindow;
-    @SuppressLint("StaticFieldLeak")
     public static View floatView;
     public static boolean floatWindowOn = false;
+
+    static {
+        System.loadLibrary("StringUnit");
+    }
     private Logger logger;
     private Deque<StatusBarNotification> statusBarNotifications = new LinkedList<>();
     private volatile boolean hasNotifications = false;
@@ -47,7 +50,8 @@ public class Notify extends NotificationListenerService {
     private Handler sbnHandler;
     private final Object lock = new Object();
     private int bindTime = 0;
-
+    private boolean PodBlackMode = false;
+    private boolean KeywordBlackMode = false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -58,8 +62,8 @@ public class Notify extends NotificationListenerService {
         floatView = LayoutInflater.from(this).inflate(R.layout.float_view, null);
         logger.write(LogLevel.info,"Initialize","floatWindow Initialized");
 
-        Reader notifyFloatWindow = new Reader(this,"notifyFloatWindow");
-        Notify.floatWindowOn = notifyFloatWindow.getBoolean("floatWindowOn");
+        Reader notifyFloatWindow = new Reader(this, Configure.CFG_NOTIFY_WINDOW.FILE_NAME);
+        Notify.floatWindowOn = notifyFloatWindow.getBoolean(Configure.CFG_NOTIFY_WINDOW.FLOATY_WINDOW_ON);
         Notify.setNotifyFloatWindow(Notify.floatWindowOn);
         logger.write(LogLevel.step,"SbnService",String.format("ShowFloatWindow: %b",floatWindowOn));
 
@@ -107,7 +111,7 @@ public class Notify extends NotificationListenerService {
         },BIND_AUTO_CREATE);
     }
 
-    public static void setNotifyFloatWindow(boolean show){
+    public static void setNotifyFloatWindow(boolean show) throws NullPointerException{
         if (show) {
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -116,14 +120,15 @@ public class Notify extends NotificationListenerService {
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                     PixelFormat.TRANSLUCENT
             );
-            params.gravity = Gravity.CENTER_VERTICAL;
             floatWindow.addView(floatView, params);
+            params.gravity = Gravity.CENTER_VERTICAL;
             floatWindowOn = true;
         } else {
             if (floatWindowOn)
                 floatWindow.removeView(floatView);
         }
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -133,7 +138,6 @@ public class Notify extends NotificationListenerService {
         logger.write(LogLevel.info, "SbnService", "Background thread stopped.Rebinding.");
         requestRebind(new ComponentName(this.getPackageName(), this.getClass().getName()));
     }
-
     private int parseColor(String colorString, int defaultColor) {
         if (colorString == null || colorString.isEmpty()) {
             logger.write(LogLevel.error, "FloatService", "Color string is null or empty. Using default.");
@@ -146,13 +150,35 @@ public class Notify extends NotificationListenerService {
             return defaultColor;
         }
     }
+
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
         logger.write(LogLevel.step, "SbnService", "SBN Posted");
+
+        Reader notifyWindowConfig = new Reader(this, Configure.CFG_NOTIFY_WINDOW.FILE_NAME);
+        KeywordBlackMode = notifyWindowConfig.getBoolean(Configure.CFG_NOTIFY_WINDOW.KW_BLACKLIST_MODE);
+        PodBlackMode = notifyWindowConfig.getBoolean(Configure.CFG_NOTIFY_WINDOW.POD_BLACKLIST_MODE);
+
         if (sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null && sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT) == null)
             return;
-        statusBarNotifications.offerLast(sbn);
+        Reader notifyConfig = new Reader(this,Configure.CFG_NOTIFY.FILE_NAME);
+        try {
+            String packageName = sbn.getPackageName();
+            CharSequence textCharSequence = (sbn.getNotification() != null && sbn.getNotification().extras != null) ? sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT) : null;
+            String text = (textCharSequence != null) ? textCharSequence.toString() : "";
+            String keyWords = notifyConfig.getString(Configure.CFG_NOTIFY.KEY_WORDS);
+            String podPackages = notifyConfig.getString(Configure.CFG_NOTIFY.POD_PACKAGES);
+            boolean shouldBlock = false;
+            if (KeywordBlackMode) {
+                if (filter(text, keyWords)) shouldBlock = true;
+            } else if (PodBlackMode) {
+                if (filter(packageName,podPackages)) shouldBlock = true;
+            }
+            if (!shouldBlock) statusBarNotifications.offerLast(sbn);
+        }catch (NullPointerException e){
+            logger.write(LogLevel.error ,"onNotificationPosted", "Any NullPointer:"+e);
+        }
         synchronized (lock) {
             if (!hasNotifications) {
                 hasNotifications = true;
@@ -161,52 +187,50 @@ public class Notify extends NotificationListenerService {
             }
         }
     }
+    private void postOnDmm() {
+        logger.write(LogLevel.step, "PoD", "postOnDMM");
 
-
-    private void postOnDmm(){
-        logger.write(LogLevel.step,"PoD","postOnDMM");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            try {
-                StatusBarNotification sbn = statusBarNotifications.pollFirst();
-                if(sbn == null) {
-                    statusBarNotifications = new LinkedList<>();
-                    hasNotifications = false;
-                    return;
-                }
-                logger.write(LogLevel.info, "PoD", String.format("\rTitle:\t\t%s\rContent:\t%s", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE), sbn.getNotification().extras.getString(Notification.EXTRA_TEXT)));
-                floatView.post(()->{
-                    TextView Tv_Title = floatView.findViewById(R.id.Tv_Title);
-                        TextView Tv_Context = floatView.findViewById(R.id.Tv_Context);
-                try{
+        try {
+            StatusBarNotification sbn = statusBarNotifications.pollFirst();
+            if (sbn == null) {
+                statusBarNotifications = new LinkedList<>();
+                hasNotifications = false;
+                return;
+            }
+            logger.write(LogLevel.info, "PoD", String.format("\rTitle:\t\t%s\rContent:\t%s", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE), sbn.getNotification().extras.getString(Notification.EXTRA_TEXT)));
+            floatView.post(() -> {
+                TextView Tv_Title = floatView.findViewById(R.id.Tv_Title);
+                TextView Tv_Context = floatView.findViewById(R.id.Tv_Context);
+                try {
                     Tv_Title.setText(this.getPackageManager().getApplicationLabel(this.getPackageManager().getApplicationInfo(sbn.getPackageName(), PackageManager.GET_META_DATA)));
                 } catch (PackageManager.NameNotFoundException e) {
                     Tv_Title.setText(sbn.getPackageName());
                 }
-                    Tv_Context.setText(MessageFormat.format("{0} {1}", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null ? "" : sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) + ":", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT) == null?"":sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT)));
+                Tv_Context.setText(MessageFormat.format("{0} {1}", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null ? "" : perfectingString((String) Objects.requireNonNull(sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE))), sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT) == null ? "" : ": " + perfectingString((String) Objects.requireNonNull(sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT)))));
             });
-                statusBarNotifications.removeFirst();
-                logger.write(LogLevel.info, "PoD", "removeFirst");
-                hasNotifications = !statusBarNotifications.isEmpty();
-                logger.write(LogLevel.step, "PoD",String.format("hasNotifications: %b",hasNotifications));
-            }catch (NoSuchElementException e){
-                logger.write(LogLevel.error, "PoD",String.format("First Element not Found: LinkedArray: %s\nError: %s", Arrays.toString(statusBarNotifications.toArray()), e));
-            }
+            statusBarNotifications.removeFirst();
+            logger.write(LogLevel.info, "PoD", "removeFirst");
+            hasNotifications = !statusBarNotifications.isEmpty();
+            logger.write(LogLevel.step, "PoD", String.format("hasNotifications: %b", hasNotifications));
+        } catch (NoSuchElementException e) {
+            logger.write(LogLevel.error, "PoD", String.format("First Element not Found: LinkedArray: %s\nError: %s", Arrays.toString(statusBarNotifications.toArray()), e));
         }
     }
+
     private void runNotificationProcessingLoop() {
         logger.write(LogLevel.info, "SbnService", "Background task started.");
 
-        Reader reader = new Reader(this, "FloatView");
+        Reader reader = new Reader(this, Configure.CFG_FLOATY_VIEW.FILE_NAME);
 
 
         try {
-            int delayTime = reader.getInt("DelayTime");
-            int activeColor = parseColor(reader.getString("ActiveAlpha"), getResources().getColor(R.color.acting, getResources().newTheme()));
+            double delayTime = reader.getDouble(Configure.CFG_FLOATY_VIEW.DELAY_TIME);
+            int activeColor = parseColor(reader.getString(Configure.CFG_FLOATY_VIEW.ACTIVITY_ALPHA), getResources().getColor(R.color.acting, getResources().newTheme()));
             floatView.post(() -> floatView.setBackgroundColor(activeColor));
             while (hasNotifications) {
                 logger.write(LogLevel.info, "SbnService", "Cycle");
                 postOnDmm();
-                Thread.sleep(delayTime * 1000L);
+                Thread.sleep((long) (1000 * delayTime));
             }
         } catch (InterruptedException e) {
             logger.write(LogLevel.error, "SbnService", "Processing loop interrupted.");
@@ -217,16 +241,18 @@ public class Notify extends NotificationListenerService {
         } finally {
             hasNotifications = false;
             logger.write(LogLevel.info, "SbnService", "End Cycle");
-            int waitingColor = parseColor(reader.getString("WaitingAlpha"), getResources().getColor(R.color.waiting, getResources().newTheme()));
+            int waitingColor = parseColor(reader.getString(Configure.CFG_FLOATY_VIEW.WAITING_ALPHA), getResources().getColor(R.color.waiting, getResources().newTheme()));
             floatView.post(() -> floatView.setBackgroundColor(waitingColor));
             logger.write(LogLevel.step, "SbnService", "Background task finished.");
         }
     }
-
 
     @Override
     public IBinder onBind(Intent intent) {
         logger.write(LogLevel.info, "onBind", "System is binding. Returning super's Binder.");
         return super.onBind(intent);
     }
+
+    private static native String perfectingString(String s);
+    native boolean filter(String raw, String keys);
 }

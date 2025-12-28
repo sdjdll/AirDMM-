@@ -146,12 +146,21 @@
                 android:textSize="14sp" />
 
             <EditText
+                android:id="@+id/Et_KeyWords"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:ems="10"
                 android:inputType="text"
                 android:textAlignment="viewStart"
                 android:textSize="14sp" />
+
+            <Switch
+                android:id="@+id/Swc_KeywordsBlacklistMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="@string/KwBM" />
         </LinearLayout>
 
         <LinearLayout
@@ -160,18 +169,30 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="88dp"
+                android:id="@+id/Tv_PodPackage"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:singleLine="false"
-                android:text="@string/PodPackage" />
+                android:text="@string/PodPackage"
+                android:textAllCaps="true"
+                android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/Et_PodPackage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:ems="10"
                 android:inputType="text"
                 android:textAlignment="viewStart"
                 android:textSize="14sp" />
+
+            <Switch
+                android:id="@+id/Swc_PodBlacklistMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="@string/PodBM" />
 
         </LinearLayout>
 
@@ -194,6 +215,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/SaveConfig" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -36,4 +36,9 @@ public class Reader {
         logger.write("SharedPreferences", "get Shared Preferences");
         return sharedPreferences.getBoolean(key, false);
     }
+
+    public double getDouble(String key){
+        logger.write("SharedPreferences", "get Shared Preferences");
+        return sharedPreferences.getFloat(key, 0.3F);
+    }
 }

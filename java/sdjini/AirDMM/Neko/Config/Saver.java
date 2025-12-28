@@ -49,4 +49,12 @@ public class Saver {
         if(editor.commit()) logger.write(LogLevel.info, "Pref", String.format("%s write done, %s:%s", PerfName, Key, Value));
         else logger.write(LogLevel.error, "Pref", String.format("%s write error", PerfName));
     }
+
+    public void saveDouble(String Key, double Value){
+        SharedPreferences sharedPreferences = this.context.getSharedPreferences(PerfName, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat(Key, (float) Value);
+        if(editor.commit()) logger.write(LogLevel.info, "Pref", String.format("%s write done, %s:%s", PerfName, Key, Value));
+        else logger.write(LogLevel.error, "Pref", String.format("%s write error", PerfName));
+    }
 }
