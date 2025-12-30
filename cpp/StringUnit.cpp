@@ -55,9 +55,15 @@ Java_sdjini_AirDMM_Notify_filter(JNIEnv* env,jobject,jstring raw,jstring keys) {
     return JNI_FALSE;
 }
 
-extern "C" __attribute__ ((unused)) JNIEXPORT jstring JNICALL
-Java_sdjini_AirDMM_Notify_perfectingString(JNIEnv* env,jstring string){
-    return env->NewStringUTF(clean_cpp_string(jStr2Str(env,string)).c_str());
+extern "C" JNIEXPORT jstring JNICALL
+Java_sdjini_AirDMM_Notify_perfectingString(JNIEnv* env, jclass clazz, jstring string) {
+    if (string == nullptr) {
+        return env->NewStringUTF("");
+    }
+    std::string cppStr = jStr2Str(env, string);
+    std::string cleanStr = clean_cpp_string(cppStr);
+
+    return env->NewStringUTF(cleanStr.c_str());
 }
 
 int strFilter(const std::string* raw, const char* filterArray,const int filterSize){

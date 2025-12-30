@@ -103,6 +103,7 @@ public class Setting extends AppCompatActivity {
                 Notify.floatWindow = (WindowManager) getSystemService(WINDOW_SERVICE);
                 Notify.floatView = LayoutInflater.from(this).inflate(R.layout.float_view, null);
                 Notify.setNotifyFloatWindow(Notify.floatWindowOn);
+                logger.write(LogLevel.error, "BtnAct","Notify.floatWindow is null");
             }
             logger.write(LogLevel.info, "BtnAct", "floatWindow Done");
         }
