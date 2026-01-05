@@ -2,22 +2,21 @@
 #include <string>
 #include <algorithm>
 
+bool isSpecialInvisibleControlChar(char c);
 
-int strFilter(const std::string& raw, char* filterArray, int filterSize);
-std::string jStr2Str(JNIEnv* env,jstring jStr);
-std::string clean_cpp_string(const std::string& str);
-
-extern "C" __attribute__((unused)) JNIEXPORT jboolean JNICALL
-Java_sdjini_AirDMM_Notify_filter(JNIEnv* env,jobject,jstring raw,jstring keys) {
+extern "C" JNIEXPORT jboolean JNICALL
+Java_sdjini_AirDMM_Notify_filter(JNIEnv* env, jobject, jstring raw, jstring keys) {
 
     if (raw == nullptr || keys == nullptr) return JNI_FALSE;
 
     const char *rawChars = env->GetStringUTFChars(raw, nullptr);
-    const char *keysChars = env->GetStringUTFChars(keys, nullptr);
+    if (rawChars == nullptr) {
+        return JNI_FALSE;
+    }
 
-    if (rawChars == nullptr || keysChars == nullptr) {
-        if (rawChars) env->ReleaseStringUTFChars(raw, rawChars);
-        if (keysChars) env->ReleaseStringUTFChars(keys, keysChars);
+    const char *keysChars = env->GetStringUTFChars(keys, nullptr);
+    if (keysChars == nullptr) {
+        env->ReleaseStringUTFChars(raw, rawChars);
         return JNI_FALSE;
     }
 
@@ -56,40 +55,63 @@ Java_sdjini_AirDMM_Notify_filter(JNIEnv* env,jobject,jstring raw,jstring keys) {
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_sdjini_AirDMM_Notify_perfectingString(JNIEnv* env, jclass clazz, jstring string) {
-    if (string == nullptr) {
-        return env->NewStringUTF("");
+Java_sdjini_AirDMM_Notify_perfectingString(JNIEnv *env,jclass,jstring input) {
+    if (input == nullptr) return nullptr;
+    const char *nativeStr = env->GetStringUTFChars(input, nullptr);
+    jsize len = env->GetStringUTFLength(input);
+
+    if (nativeStr == nullptr || len == 0) {
+        env->ReleaseStringUTFChars(input, nativeStr);
+        return input;
     }
-    std::string cppStr = jStr2Str(env, string);
-    std::string cleanStr = clean_cpp_string(cppStr);
 
-    return env->NewStringUTF(cleanStr.c_str());
-}
-
-int strFilter(const std::string* raw, const char* filterArray,const int filterSize){
-    for (int i = 0;i < filterSize; i++,filterArray++)
-        if (raw->find(*filterArray)) return i;
-    return -1;
-}
-std::string clean_cpp_string(const std::string& str) {
-    const std::string BLACKLIST_CHARS =
-            "\uFEFE\u2028\u2029"
-            "\u007f"
-            "\u0080\u0081\u0082\u0083\u0084\u0085\u0086\u0087"
-            "\u0088\u0089\u008a\u008b\u008c\u008d\u008e\u008f"
-            "\u0090\u0091\u0092\u0093\u0094\u0095\u0096\u0097"
-            "\u0098\u0099\u009a\u009b\u009c\u009d\u009e\u0099f"
-            "\u0008\u000c";
     std::string result;
-    result.reserve(str.size());
-    for (char c : str)
-        if (BLACKLIST_CHARS.find(c) == std::string::npos) result += c;
-    return result;
+    result.reserve(len);
+
+    bool lastWasSpecial = false;
+
+    for (int i = 0; i < len; ) {
+        unsigned char c = static_cast<unsigned char>(nativeStr[i]);
+
+        if (c > 127) {
+            int charLen = 0;
+            if ((c & 0xE0) == 0xC0) charLen = 2;
+            else if ((c & 0xF0) == 0xE0) charLen = 3;
+            else if ((c & 0xF8) == 0xF0) charLen = 4;
+            else charLen = 1;
+
+            if (i + charLen <= len) {
+                result.append(nativeStr + i, charLen);
+                i += charLen;
+                lastWasSpecial = false;
+            } else {
+                i++;
+            }
+        } else {
+            if (isSpecialInvisibleControlChar(c)) {
+                if (!lastWasSpecial) {
+                    result.append(" ");
+                    lastWasSpecial = true;
+                }
+            } else {
+                result.push_back(c);
+                lastWasSpecial = false;
+            }
+            i++;
+        }
+    }
+
+    env->ReleaseStringUTFChars(input, nativeStr);
+    return env->NewStringUTF(result.c_str());
 }
-std::string jStr2Str(JNIEnv* env, jstring jStr) {
-    if (jStr == nullptr) return "";
-    jsize len = env->GetStringUTFLength(jStr);
-    std::string result(len, '\0');
-    env->GetStringUTFRegion(jStr, 0, len, &result[0]);
-    return result;
+
+bool isSpecialInvisibleControlChar(char c) {
+    if (c < 0 || c > 31) {
+        return false;
+    }
+    if (c == 9 || c == 10 || c == 13) {
+        return false;
+    }
+
+    return true;
 }

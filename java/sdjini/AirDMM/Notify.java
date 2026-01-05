@@ -206,14 +206,14 @@ public class Notify extends NotificationListenerService {
                 } catch (PackageManager.NameNotFoundException e) {
                     Tv_Title.setText(sbn.getPackageName());
                 }
-                Tv_Context.setText(MessageFormat.format("{0} {1}", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null ? "" : perfectingString((String) Objects.requireNonNull(sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE))), sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT) == null ? "" : ": " + perfectingString((String) Objects.requireNonNull(sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT)))));
+                Tv_Context.setText(MessageFormat.format("{0} {1}", sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null ? "" : perfectingString((String) Objects.requireNonNull(sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE))), sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT) == null ? "" : ":\n" + perfectingString((String) Objects.requireNonNull(sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT)))));
             });
             statusBarNotifications.removeFirst();
             logger.write(LogLevel.info, "PoD", "removeFirst");
             hasNotifications = !statusBarNotifications.isEmpty();
             logger.write(LogLevel.step, "PoD", String.format("hasNotifications: %b", hasNotifications));
         } catch (NoSuchElementException e) {
-            logger.write(LogLevel.error, "PoD", String.format("First Element not Found: LinkedArray: %s\nError: %s", Arrays.toString(statusBarNotifications.toArray()), e));
+            logger.write(LogLevel.info, "PoD", String.format("First Element not Found: LinkedArray: %s\nError: %s", Arrays.toString(statusBarNotifications.toArray()), e));
         }
     }
 
