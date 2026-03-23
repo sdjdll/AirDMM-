@@ -3,14 +3,6 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        getByName("debug") {
-            storeFile = file("D:\\Users\\sdjini\\Desktop\\杂项\\sdjini.jks")
-            storePassword = "Rrhar\'il"
-            keyAlias = "sdjini"
-            keyPassword = "Rrhar\'il"
-        }
-    }
     namespace = "sdjini.AirDMM"
     compileSdk {
         version = release(36)
@@ -28,6 +20,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += ""
+//                path = "src/main/cpp/CMakeLists.txt"
             }
         }
         multiDexEnabled = true
