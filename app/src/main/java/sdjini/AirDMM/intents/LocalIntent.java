@@ -15,13 +15,12 @@ public class LocalIntent extends Intent{
     public static final String serviceSelfRestart = "ServiceSelfRestart";
     public static final String serviceStop = "ServiceStop";
     public static final String serviceSelfStop = "ServiceSelfStop";
+    public static final String update = "Update";
+    public static final String notify = "Notify";
     public static final String intents = "sdjini.AirDMM.intents.";
     public enum LocalIntentsName {
-        ServerStart(serverStart),
-        ServerRestart(serverRestart),
-        ServiceSelfRestart(serviceSelfRestart),
-        ServiceStop(serviceStop),
-        ServiceSelfStop(serviceSelfStop),
+        ServerStart(serverStart), ServerRestart(serverRestart), ServiceSelfRestart(serviceSelfRestart),
+        ServiceStop(serviceStop), ServiceSelfStop(serviceSelfStop), Update(update), Notify(notify),
         ;
         private final String value;
         LocalIntentsName(String value) {

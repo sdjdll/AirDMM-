@@ -2,79 +2,51 @@
 #include <stdlib.h>
 #include <string.h>
 
+int is_invisible(char c);
+
 JNIEXPORT jstring JNICALL
-Java_sdjini_AirDMM_service_Notify_stringFormat(JNIEnv *env, jobject thiz, jstring raw) {    if (raw == NULL) {
+Java_sdjini_AirDMM_service_Notify_stringFormat(JNIEnv *env, jobject thiz, jstring raw) {
+    if (raw == NULL) return NULL;
+
+    const char *src = (*env)->GetStringUTFChars(env, raw, NULL);
+    if (src == NULL) return NULL;
+
+    size_t len = strlen(src);
+    char *dest = (char *)malloc(len + 1);
+    if (dest == NULL) {
+        (*env)->ReleaseStringUTFChars(env, raw, src);
         return NULL;
     }
 
-    // 1. 获取UTF-8字符串
-    // 注意：GetStringUTFChars 返回的是 const char*，直接修改可能导致崩溃或数据损坏
-    // 为了安全地进行原地修改，我们需要将其复制一份到可写的内存区域
-    const char *rawCStr = (*env)->GetStringUTFChars(env, raw, NULL);
-    if (rawCStr == NULL) {
-        return NULL; // 内存分配失败
-    }
+    const char *a = src;
+    char *c = dest;
 
-    // 分配内存拷贝字符串，以便修改
-    char *array = strdup(rawCStr);
-    (*env)->ReleaseStringUTFChars(env, raw, rawCStr); // 尽快释放原始JVM内存
-
-    if (array == NULL) {
-        return NULL; // 内存分配失败
-    }
-
-    char *a, *b, *c;
-    a = b = c = array; // 初始化指针指向头部
-
-    // 主循环
     while (*a != '\0') {
-        // --- 步骤 1 ---
-        // 向右移动 a，直到遇到“不可见字符”（这里定义为空格）
-        // 排除 \t, \n, \0，即遇到 \t \n \0 视为“可见”继续跳过
-        while (*a != '\0' && *a != ' ') {
-            a++;
-        }
+        while (*a != '\0' && !is_invisible(*a)) *c++ = *a++;
 
-        // 如果 a 指向了字符串结束符，说明后面没有空格了，任务完成
-        if (*a == '\0') {
-            break;
-        }
 
-        // --- 步骤 2 ---
-        // 此时 a 指向空格。移动 b 到 a，然后向右移动 b 至第一个“可见字符”
-        b = a;
+        if (*a == '\0') break;
 
-        // 这里的“可见字符”指非空格（包括 \t, \n, \0 都视为可见保留）
-        while (*b != '\0' && *b == ' ') {
-            b++;
-        }
-
-        // --- 步骤 3 ---
-        // 移动 c 到 a，然后删除 [a, b-1] 范围内的字符（即删除这段空格）
-        // “删除”操作通过内存移动实现：将 b 之后的内容搬运到 a 的位置
-        c = a;
-
-        // 计算需要搬运的长度：从 b 到结尾（包含 \0）
-        size_t len = strlen(b) + 1;
-
-        // 使用 memmove 进行内存搬运（memmove 允许源和目标内存重叠）
-        memmove(c, b, len);
-
-        // --- 步骤 4 ---
-        // 此时，原先 b 指向的内容已经被搬运到了 a 的位置。
-        // 字符串整体缩短了。
-        // 你提到的“移动 a 到 b”：
-        // 在原地搬运后，逻辑上 a 现在指向了之前 b 对应的字符。
-        // 我们不需要显式赋值 a = b (因为 b 的位置已经变了)，
-        // 下一次循环会继续检查当前 a 指向的字符（即之前 b 的字符）是否符合条件。
-        // 如果是 \t 或 \n，步骤1会跳过；如果是字母，步骤1也会跳过。
-        // 如果 a 现在指向 \0，循环将在下一轮顶部结束。
+        const char *b = a;
+        while (*b != '\0' && is_invisible(*b)) b++;
+        a = b;
     }
 
-    // 构造新的 Java 字符串返回
-    jstring result = (*env)->NewStringUTF(env, array);
+    *c = '\0';
 
-    free(array);
+    jstring result = (*env)->NewStringUTF(env, dest);
+
+    free(dest);
+    (*env)->ReleaseStringUTFChars(env, raw, src);
 
     return result;
+}
+
+int is_invisible(char c) {
+    if (c == '\t' || c == '\n' || c == '\0') return 0;
+
+    unsigned char uc = (unsigned char)c;
+    if (uc <= 32 || uc == 127) return 1;
+
+    return 0;
 }

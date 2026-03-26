@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">AirDMM!</string>
     <string name="DelayTime">DelayTime</string>
-    <string name="WaitingAlpha">WaitingColor</string>
-    <string name="ActiveAlpha">ActiveColor</string>
+    <string name="WaitingColor">Waiting Color</string>
+    <string name="WaitingTextColor">Waiting Text Color</string>
+    <string name="ActivityColor">Activity Color</string>
+    <string name="ActivityTextColor">Activity Text Color</string>
     <string name="Start">Start</string>
     <string name="Stop">Stop</string>
     <string name="Restart">Restart</string>

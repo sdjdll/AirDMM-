@@ -29,4 +29,7 @@ public class Intent_ServiceControl extends LocalIntent {
         super(builder.source, builder.target);
         super.putExtra(working, builder.isWorking);
     }
+    public Intent_ServiceControl(LocalIntentsName lin){
+        super(lin);
+    }
 }

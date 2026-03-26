@@ -2,8 +2,10 @@
 <resources>
     <string name="app_name">AirDMM!</string>
     <string name="DelayTime">通知显示时间</string>
-    <string name="WaitingAlpha">待机颜色</string>
-    <string name="ActiveAlpha">活动颜色</string>
+    <string name="WaitingColor">待机背景颜色</string>
+    <string name="WaitingTextColor">待机文字颜色</string>
+    <string name="ActivityColor">活动背景颜色</string>
+    <string name="ActivityTextColor">活动文字颜色</string>
     <string name="Start">开始</string>
     <string name="Stop">停止</string>
     <string name="Restart">重启</string>

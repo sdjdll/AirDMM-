@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 
 public class SharedManager {
     public enum ShaderName{
-        Color("Color"),
+        Floaty("Floaty"),
         Notify("Notify"),
         ;
         private final String value;

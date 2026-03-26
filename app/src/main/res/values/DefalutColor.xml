@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="waitingBg" translatable="false">#33000000</string>
+    <string name="actingBg" translatable="false">#77000000</string>
+    <string name="waitingTx" translatable="false">#000000</string>
+    <string name="actingTx" translatable="false">#000000</string>
+</resources>

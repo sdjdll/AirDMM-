@@ -12,7 +12,7 @@ public class CoupleQueue {
     }
 
     // 初始化：预设队列容量
-    private native void INIT(int capacity);
+    public native void INIT(int capacity);
 
     // 添加一对字符串
     public native void add(String a, String b);

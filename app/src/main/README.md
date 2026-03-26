@@ -1,1 +1,4 @@
-若需做任何更改请在Android Studio中新建Java NoActivity项目，然后将项目代码放在/app/src/main下
+## AirDMM-4
+\
+1.重新构建 **整个** 项目 （Rebuild All）\
+1. 加入了自定义文字颜色，在

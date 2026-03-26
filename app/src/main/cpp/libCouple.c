@@ -108,9 +108,7 @@ Java_sdjini_AirDMM_custom_CoupleQueue_add (JNIEnv *env, jobject thiz, jstring st
 JNIEXPORT jobjectArray JNICALL
 Java_sdjini_AirDMM_custom_CoupleQueue_get (JNIEnv *env, jobject thiz) {
 
-    if (g_couple == NULL || g_couple->count == 0) {
-        return NULL;
-    }
+    if (g_couple == NULL || g_couple->count == 0) return NULL;
 
     String* head_a = &g_couple->a[0];
     String* head_b = &g_couple->b[0];
