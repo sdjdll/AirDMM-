@@ -13,6 +13,8 @@
     <string name="PodPackage">POD Package</string>
     <string name="BlackMode">BlackMode</string>
     <string name="PodBM">POD Package Blacklist Mode</string>
+    <string name="PodWM">POD Package Whitelist Mode</string>
     <string name="KwBM">Keywords Blacklist Mode</string>
     <string name="Pod">POD mean "Post on DMM"</string>
+    <string name="FloatyNotification">Floaty foreground notification</string>
 </resources>

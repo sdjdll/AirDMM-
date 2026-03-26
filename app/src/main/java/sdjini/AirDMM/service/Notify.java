@@ -7,15 +7,19 @@ import static sdjini.AirDMM.intents.LocalIntent.update;
 
 import android.app.Notification;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
+import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.Arrays;
@@ -23,6 +27,7 @@ import java.util.Arrays;
 import sdjini.AirDMM.StaticMain;
 import sdjini.AirDMM.custom.CoupleQueue;
 import sdjini.AirDMM.intents.Intent_Notify;
+import sdjini.AirDMM.intents.Intent_Update;
 import sdjini.AirDMM.log.Level;
 import sdjini.AirDMM.log.Logger;
 import sdjini.AirDMM.log.Tags;
@@ -71,7 +76,22 @@ public class Notify extends NotificationListenerService {
         OnPackageFilter = sm.readBoolean(OnPackageFilterKey);
         IntentFilter iF = new IntentFilter();
         iF.addAction(LocalIntentsName.ServiceSelfRestart.toString());
+        iF.addAction(LocalIntentsName.Update.toString());
         lb.registerReceiver(br,iF);
+
+        Intent i = new Intent(this, FloatWindow.class);
+        startForegroundService(i);
+        bindService(i, new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Bind Floaty");
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                startForegroundService(i);
+            }
+        }, BIND_AUTO_CREATE);
 
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
@@ -112,16 +132,16 @@ public class Notify extends NotificationListenerService {
         }
         lb.sendBroadcast(new Intent_Notify());
     }
+    @Nullable
     private StatusBarNotification filter(StatusBarNotification sbn){
-        return Arrays.asList(packageFilter).contains(sbn.getPackageName()) | !OnPackageFilter ? sbn : null;
+        if(OnPackageFilter) return Arrays.asList(packageFilter).contains(sbn.getPackageName()) ? null : sbn;
+        else return Arrays.asList(packageFilter).contains(sbn.getPackageName()) ? sbn : null;
     }
     private boolean filter(String s){
-        boolean b;
-        for (String key : keywordFilter) {
-            b = s.contains(key);
-            if (b) return true;
-        }
-        return OnKeywordFilter;
+        if(OnKeywordFilter)
+            for (String key : keywordFilter)
+                if (s.contains(key)) return false;
+        return true;
     }
 
     @Override
@@ -130,19 +150,26 @@ public class Notify extends NotificationListenerService {
     }
 
     private native String stringFormat(String raw);
-    private String stringFormatJ(String raw){
+    private String stringFormatJ(String raw) {
         if (raw == null) return null;
-
         StringBuilder sb = new StringBuilder(raw.length());
-
+        boolean lastWasInvisible = false;
         for (int i = 0; i < raw.length(); ) {
             int codePoint = raw.codePointAt(i);
-            if (!isInvisible(codePoint)) sb.appendCodePoint(codePoint);
+            if (isInvisible(codePoint)) lastWasInvisible = true;
+            else {
+                if (lastWasInvisible) {
+                    sb.append(' ');
+                    lastWasInvisible = false;
+                }
+                sb.appendCodePoint(codePoint);
+            }
+
             i += Character.charCount(codePoint);
         }
-
         return sb.toString();
     }
+
     private boolean isInvisible(int codePoint) {
         if (codePoint == '\0' || codePoint == '\t' || codePoint == '\n') return false;
 

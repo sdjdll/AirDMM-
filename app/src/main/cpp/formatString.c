@@ -29,6 +29,9 @@ Java_sdjini_AirDMM_service_Notify_stringFormat(JNIEnv *env, jobject thiz, jstrin
 
         const char *b = a;
         while (*b != '\0' && is_invisible(*b)) b++;
+
+        if(b>a) *c++ = ' ';
+
         a = b;
     }
 

@@ -1,6 +1,4 @@
-#include <jni.h>
-#include <stdlib.h>
-#include <string.h>
+#include "couple.h"
 
 typedef struct {
     int len, cap;

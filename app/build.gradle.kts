@@ -10,8 +10,11 @@ android {
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
+        ndk{
+            abiFilters += listOf("arm64-v8a","x86_64")
+        }
         applicationId = "sdjini.AirDMM"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 36
         versionCode = 4
         versionName = "4.0.0"
@@ -20,7 +23,6 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += ""
-//                path = "src/main/cpp/CMakeLists.txt"
             }
         }
         multiDexEnabled = true
@@ -28,11 +30,16 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isEmbedMicroApp = false
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk{
+                abiFilters += listOf("arm64-v8a")
+            }
         }
     }
     compileOptions {

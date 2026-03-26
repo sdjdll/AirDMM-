@@ -1,6 +1,7 @@
 package sdjini.AirDMM.log;
 
 import android.content.Context;
+import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
@@ -33,6 +34,21 @@ public final class Tags {
             @Override
             public String toString() {
                 return context + ".ServiceAction";
+            }
+        }
+
+        public static final class Floaty{
+            public static final class FloatyLoop implements Tag {
+                private volatile Handler h;
+                public FloatyLoop(Handler h) {
+                    this.h = h;
+                }
+
+                @NonNull
+                @Override
+                public String toString() {
+                    return "Floaty." + h.toString();
+                }
             }
         }
     }
