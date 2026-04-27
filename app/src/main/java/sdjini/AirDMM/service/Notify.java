@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
@@ -24,10 +23,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.Arrays;
 
-import sdjini.AirDMM.StaticMain;
-import sdjini.AirDMM.custom.CoupleQueue;
 import sdjini.AirDMM.intents.Intent_Notify;
-import sdjini.AirDMM.intents.Intent_Update;
 import sdjini.AirDMM.log.Level;
 import sdjini.AirDMM.log.Logger;
 import sdjini.AirDMM.log.Tags;
@@ -40,7 +36,7 @@ public class Notify extends NotificationListenerService {
     private boolean OnPackageFilter = false;
     private SharedManager sm;
     private LocalBroadcastManager lb;
-    private Logger logger;
+//    private Logger logger;
     private Context context;
     private final BroadcastReceiver br = new BroadcastReceiver() {
         @Override
@@ -51,10 +47,10 @@ public class Notify extends NotificationListenerService {
             }
         }
         private void Default(){
-            logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(context), "Default");
+//            logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(context), "Default");
         }
         private void Update(){
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Update");
+//            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Update");
             keywordFilter = getFilterArray(sm.readString(keywordFilterKey));
             packageFilter = getFilterArray(sm.readString(packageFilterKey));
             OnKeywordFilter = sm.readBoolean(OnKeywordFilterKey);
@@ -67,7 +63,7 @@ public class Notify extends NotificationListenerService {
         staticQueue.INIT(10);
         lb = LocalBroadcastManager.getInstance(this);
         sm = new SharedManager(this, SharedManager.ShaderName.Notify);
-        logger = new Logger(this);
+//        logger = new Logger(this);
         context = this;
 
         keywordFilter = getFilterArray(sm.readString(keywordFilterKey));
@@ -84,7 +80,7 @@ public class Notify extends NotificationListenerService {
         bindService(i, new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Bind Floaty");
+//                logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Bind Floaty");
             }
 
             @Override
@@ -93,7 +89,7 @@ public class Notify extends NotificationListenerService {
             }
         }, BIND_AUTO_CREATE);
 
-        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
+//        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
     private String[] getFilterArray(String raw){
         assert raw != null;

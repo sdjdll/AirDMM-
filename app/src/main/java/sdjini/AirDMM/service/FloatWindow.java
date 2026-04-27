@@ -31,16 +31,13 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import sdjini.AirDMM.R;
 import sdjini.AirDMM.Setting;
 import sdjini.AirDMM.intents.LocalIntent.LocalIntentsName;
 import sdjini.AirDMM.intents.LocalIntent;
-import sdjini.AirDMM.log.Level;
-import sdjini.AirDMM.log.Logger;
-import sdjini.AirDMM.log.Tags;
+import sdjini.AirDMM.log.*;
 import sdjini.AirDMM.shared.SharedManager;
 
 public class FloatWindow extends Service {
@@ -57,14 +54,14 @@ public class FloatWindow extends Service {
     private View view;
     private IntentFilter iF = new IntentFilter();
     private Context context;
-    private Logger logger;
+//    private Logger logger;
     private Handler updateFloaty, MainHandler;
     private SharedManager sm;
     private final Object NotifyLock = new Object();
     private final BroadcastReceiver br = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty Intent", intent.getAction());
+//            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty Intent", intent.getAction());
             assert intent.getAction()  != null;
             switch (intent.getAction()){
                 case LocalIntent.intents + LocalIntent.serverStart          -> serverStart();
@@ -80,7 +77,7 @@ public class FloatWindow extends Service {
         private void Default(){}
         private void serverStart(){
             if (States.ServiceState == States.state.WorkingAndFloaty) return;
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty start");
+//            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty start");
             WindowManager.LayoutParams params = new WindowManager.LayoutParams();
             params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
             params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
@@ -96,7 +93,7 @@ public class FloatWindow extends Service {
         }
         private void serverSelfRestart(){}
         private void serverStop(){
-            logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(context), "State:"+States.ServiceState);
+//            logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(context), "State:"+States.ServiceState);
             if (States.ServiceState != States.state.WorkingAndFloaty) return;
             floaty.removeView(view);
             States.ServiceState = States.state.Working;
@@ -123,7 +120,7 @@ public class FloatWindow extends Service {
     private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop");
+//            logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop");
             String[] temp;
             synchronized (staticQueue.lock){
                 temp = staticQueue.get();
@@ -138,7 +135,7 @@ public class FloatWindow extends Service {
                 Tv_Context.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
                 synchronized (NotifyLock){
                     try {
-                        logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop Lock");
+//                        logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop Lock");
                         NotifyLock.wait();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -164,7 +161,7 @@ public class FloatWindow extends Service {
     public void onCreate() {
         super.onCreate();
         context = this;
-        logger = new Logger(this);
+//        logger = new Logger(this);
         sm = new SharedManager(this, SharedManager.ShaderName.Floaty);
         floaty = (WindowManager) getSystemService(WINDOW_SERVICE);
         view = LayoutInflater.from(this).inflate(R.layout.float_view, null);
@@ -193,7 +190,7 @@ public class FloatWindow extends Service {
         lb.registerReceiver(br, iF);
 
         updateFloaty.post(runnable);
-        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
+//        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
     private Notification createNotification(){
         NotificationChannel channel = new NotificationChannel("Floaty foreground", "Floaty foreground", NotificationManager.IMPORTANCE_NONE);
@@ -217,12 +214,12 @@ public class FloatWindow extends Service {
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Notify Bind");
+//            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Notify Bind");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Notify Unbind");
+//            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Notify Unbind");
         }
     };
     private static class FloatyBinder extends Binder{ }
@@ -239,7 +236,7 @@ public class FloatWindow extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Service Already Started");
+//        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Service Already Started");
         return super.onStartCommand(intent, flags, startId);
     }
 }

@@ -127,4 +127,10 @@ public class Setting extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
+
+    @Override
+    public boolean moveTaskToBack(boolean nonRoot) {
+        finish();
+        return super.moveTaskToBack(nonRoot);
+    }
 }

@@ -15,3 +15,9 @@ add_library(
 
 target_link_libraries(Couple)
 target_link_libraries(stringLib)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_custom_command(TARGET libcouple POST_BUILD
+        COMMAND ${CMAKE_STRIP}$<TARGET_FILE:libcouple>
+    )
+endif()

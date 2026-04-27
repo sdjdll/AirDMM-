@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.yaml.snakeyaml.constructor.Construct
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -25,7 +27,7 @@ android {
                 cppFlags += ""
             }
         }
-        multiDexEnabled = true
+        multiDexEnabled = false
     }
 
     buildTypes {
