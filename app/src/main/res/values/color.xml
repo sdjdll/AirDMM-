@@ -2,4 +2,5 @@
 <resources>
     <color name="waiting">#3000</color>
     <color name="acting">#7000</color>
+    <color name="none">#01000000</color>
 </resources>

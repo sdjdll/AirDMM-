@@ -65,6 +65,13 @@ public class FloatWindow extends Service {
     private SharedManager sm;
     private ViewGroup.MarginLayoutParams lp;
     private final Object NotifyLock = new Object();
+    private int wc,
+            wtc,
+            ac,
+            atc,
+            dt,
+            fp;
+//            non = getColor(R.color.none);
     private final BroadcastReceiver br = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -84,6 +91,12 @@ public class FloatWindow extends Service {
         private void Default(){}
         private void serverStart(){
             if (States.ServiceState == States.state.WorkingAndFloaty) return;
+            ac  = Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg)));
+            atc = Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx)));
+            wc  = Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg)));
+            wtc = Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx)));
+            dt = sm.readInt(DelayTimeKey, 500);
+            fp = sm.readInt(FloatyPosition, 50);
             logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty start");
             WindowManager.LayoutParams params = new WindowManager.LayoutParams();
             params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -127,51 +140,60 @@ public class FloatWindow extends Service {
             tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
             LinearLayout Lout_Floaty = view.findViewById(R.id.Lout_Floaty);
             lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
-            lp.topMargin = sm.readInt(FloatyPosition, 50);
+            lp.topMargin = fp;
             Lout_Floaty.setLayoutParams(lp);
         }
     };
     private LocalBroadcastManager lb;
-    private final Runnable runnable = new Runnable() {
+    private TextView Tv_Title;
+    private TextView Tv_Context;
+    private LinearLayout Lout;
+    private final Runnable uiUpper = new Runnable() {
+        private String[] couple;
+
         @Override
         public void run() {
             logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop");
-            lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
-            String[] temp;
+
             synchronized (staticQueue.lock){
-                temp = staticQueue.get();
+                couple = staticQueue.get();
             }
-            TextView Tv_Title = view.findViewById(R.id.Tv_Title);
-            TextView Tv_Context = view.findViewById(R.id.Tv_Context);
+            if (couple != null) toStart();
+            else toStop();
 
-            if (temp == null) {
-                Tv_Title.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
-                Tv_Title.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
-                Tv_Context.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
-                Tv_Context.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
-                synchronized (NotifyLock){
-                    try {
-                        logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop Lock");
-                        NotifyLock.wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                updateFloaty.post(this);
-                return;
-            }
-            MainHandler.post(() -> {
-                Tv_Title.setBackgroundColor(Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg))));
-                Tv_Title.setTextColor(Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx))));
-                Tv_Context.setBackgroundColor(Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg))));
-                Tv_Context.setTextColor(Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx))));
-                Tv_Title.setText(temp[0]);
-                Tv_Context.setText(temp[1]);
+            updateFloaty.postDelayed(this, dt);
+        }
+        private void toStop(){
+            view.post(()->{
+                // Tv清空可能造成抖动但是我没看到
+                Tv_Title.setText("");
+                Tv_Context.setText("");
+                // 颜色
+                Lout.setBackgroundColor(wc);
+                Tv_Title.setTextColor(wtc);
+                Tv_Context.setTextColor(wtc);
             });
-
-            updateFloaty.postDelayed(this, sm.readInt(DelayTimeKey, 3000));
+            synchronized (NotifyLock){
+                try {
+                    NotifyLock.wait();
+                } catch (InterruptedException e) {
+                    logger.printAndWrite(Level.INFO, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "Notify interrupted");
+                }
+            }
+        }
+        private void toStart(){
+            view.post(()->{
+                // 文字
+                Tv_Title.setText(couple[0]);
+                Tv_Context.setText(couple[1]);
+                // 颜色
+                Lout.setBackgroundColor(ac);
+                Tv_Title.setTextColor(atc);
+                Tv_Context.setTextColor(atc);
+            });
         }
     };
+
 
     @Override
     public void onCreate() {
@@ -180,6 +202,12 @@ public class FloatWindow extends Service {
         context = this;
         logger = new Logger(this);
         sm = new SharedManager(this, SharedManager.ShaderName.Floaty);
+        ac  = Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg)));
+        atc = Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx)));
+        wc  = Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg)));
+        wtc = Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx)));
+        dt = sm.readInt(DelayTimeKey, 500);
+        fp = sm.readInt(FloatyPosition, 50);
         floaty = (WindowManager) getSystemService(WINDOW_SERVICE);
         view = LayoutInflater.from(this).inflate(R.layout.float_view, null);
         HandlerThread ht_floaty = new HandlerThread("updateFloaty");
@@ -189,15 +217,16 @@ public class FloatWindow extends Service {
         startForeground(1, createNotification());
         lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
 
-        TextView tv = view.findViewById(R.id.Tv_Title);
-        tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
-        tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
-        tv = view.findViewById(R.id.Tv_Context);
-        tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
-        tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
+        Tv_Title = view.findViewById(R.id.Tv_Title);
+        Tv_Context = view.findViewById(R.id.Tv_Context);
+        Lout = view.findViewById(R.id.Lout_Floaty);
+        Tv_Title.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
+        Tv_Title.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
+        Tv_Context.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
+        Tv_Context.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
         LinearLayout Lout_Floaty = view.findViewById(R.id.Lout_Floaty);
         lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
-        lp.topMargin = sm.readInt(FloatyPosition, 50);
+        lp.topMargin = fp;
         Lout_Floaty.setLayoutParams(lp);
 
         iF.addAction(LocalIntentsName.ServerStart.toString());
@@ -210,7 +239,7 @@ public class FloatWindow extends Service {
 
         lb.registerReceiver(br, iF);
 
-        updateFloaty.post(runnable);
+        updateFloaty.post(uiUpper);
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
     @NonNull
@@ -241,6 +270,7 @@ public class FloatWindow extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(this), "Service Already Started");
+        lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
         return super.onStartCommand(intent, flags, startId);
     }
 

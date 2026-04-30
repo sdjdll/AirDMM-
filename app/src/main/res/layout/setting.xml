@@ -30,7 +30,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/ActivityTextColor" />
+                    android:text="@string/ActivityColor" />
 
                 <EditText
                     android:id="@+id/Et_ActiveColor"
@@ -58,7 +58,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/ActivityColor" />
+                    android:text="@string/ActivityTextColor" />
 
                 <EditText
                     android:id="@+id/Et_ActiveTextColor"
