@@ -27,6 +27,7 @@ import java.util.Arrays;
 import sdjini.AirDMM.StaticMain;
 import sdjini.AirDMM.custom.CoupleQueue;
 import sdjini.AirDMM.intents.Intent_Notify;
+import sdjini.AirDMM.intents.Intent_ServiceControl;
 import sdjini.AirDMM.intents.Intent_Update;
 import sdjini.AirDMM.log.Level;
 import sdjini.AirDMM.log.Logger;
@@ -79,19 +80,7 @@ public class Notify extends NotificationListenerService {
         iF.addAction(LocalIntentsName.Update.toString());
         lb.registerReceiver(br,iF);
 
-        Intent i = new Intent(this, FloatWindow.class);
-        startForegroundService(i);
-        bindService(i, new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Bind Floaty");
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                startForegroundService(i);
-            }
-        }, BIND_AUTO_CREATE);
+        startForegroundService(new Intent_ServiceControl(this, FloatWindow.class));
 
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
@@ -131,6 +120,7 @@ public class Notify extends NotificationListenerService {
             staticQueue.add(Title,Content);
         }
         lb.sendBroadcast(new Intent_Notify());
+        startForegroundService(new Intent_ServiceControl(this, FloatWindow.class));
     }
     @Nullable
     private StatusBarNotification filter(StatusBarNotification sbn){

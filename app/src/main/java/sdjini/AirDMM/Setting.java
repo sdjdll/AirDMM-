@@ -41,7 +41,7 @@ public class Setting extends AppCompatActivity {
 
         permissions();
 
-        setContentView(R.layout.activity_setting);
+        setContentView(R.layout.setting);
         findViewById(R.id.Btn_Start).setOnClickListener(v -> lb.sendBroadcast(new Intent_ServiceControl(LocalIntent.LocalIntentsName.ServerStart)));
         findViewById(R.id.Btn_Restart).setOnClickListener(v -> lb.sendBroadcast(new Intent_ServerRestart(this, FloatWindow.class)));
         findViewById(R.id.Btn_Stop).setOnClickListener(v -> lb.sendBroadcast(new Intent_ServiceControl(LocalIntent.LocalIntentsName.ServiceStop)));
@@ -49,13 +49,12 @@ public class Setting extends AppCompatActivity {
         findViewById(R.id.Btn_SaveConfig).setOnClickListener(v->{
             EditText et = findViewById(R.id.Et_ActiveColor);
             floaty.write(ActiveColorKey, et.getText().toString());
-                et = findViewById(R.id.Et_ActivityTextColor);
+                et = findViewById(R.id.Et_ActiveTextColor);
             floaty.write(ActiveTextColorKey, et.getText().toString());
                 et = findViewById(R.id.Et_WaitingColor);
             floaty.write(WaitingColorKey, et.getText().toString());
                 et = findViewById(R.id.Et_WaitingTextColor);
             floaty.write(WaitingTextColorKey, et.getText().toString());
-
                 et = findViewById(R.id.Et_KeyWords);
             notify.write(keywordFilterKey, et.getText().toString());
                 et = findViewById(R.id.Et_PodPackage);
@@ -68,14 +67,14 @@ public class Setting extends AppCompatActivity {
 
         EditText et = findViewById(R.id.Et_ActiveColor);
             et.setText(floaty.readString(ActiveColorKey, getString(R.string.actingBg)));
-        et = findViewById(R.id.Et_ActivityTextColor);
+        et = findViewById(R.id.Et_ActiveTextColor);
             et.setText(floaty.readString(ActiveTextColorKey, getString(R.string.actingTx)));
         et = findViewById(R.id.Et_WaitingColor);
             et.setText(floaty.readString(WaitingColorKey, getString(R.string.waitingBg)));
         et = findViewById(R.id.Et_WaitingTextColor);
             et.setText(floaty.readString(WaitingTextColorKey, getString(R.string.waitingTx)));
         et = findViewById(R.id.Et_DelayTime);
-            et.setText(""+floaty.readInt(DelayTimeKey, 3000));
+            et.setText(""+floaty.readInt(DelayTimeKey, 500));
 
         et = findViewById(R.id.Et_KeyWords);
             et.setText(notify.readString(keywordFilterKey));

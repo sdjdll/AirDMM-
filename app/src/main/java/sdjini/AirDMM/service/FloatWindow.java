@@ -5,6 +5,7 @@ import static sdjini.AirDMM.StaticMain.ActiveTextColorKey;
 import static sdjini.AirDMM.StaticMain.DelayTimeKey;
 import static sdjini.AirDMM.StaticMain.WaitingColorKey;
 import static sdjini.AirDMM.StaticMain.WaitingTextColorKey;
+import static sdjini.AirDMM.StaticMain.IsFloatyOn;
 import static sdjini.AirDMM.StaticMain.staticQueue;
 
 import android.app.Notification;
@@ -13,13 +14,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -30,12 +28,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import sdjini.AirDMM.R;
 import sdjini.AirDMM.Setting;
+import sdjini.AirDMM.intents.Intent_ServiceControl;
+import sdjini.AirDMM.intents.Intent_ServiceSelfRestart;
 import sdjini.AirDMM.intents.LocalIntent.LocalIntentsName;
 import sdjini.AirDMM.intents.LocalIntent;
 import sdjini.AirDMM.log.Level;
@@ -69,7 +69,7 @@ public class FloatWindow extends Service {
             switch (intent.getAction()){
                 case LocalIntent.intents + LocalIntent.serverStart          -> serverStart();
                 case LocalIntent.intents + LocalIntent.serverRestart        -> serverRestart();
-                case LocalIntent.intents + LocalIntent.serviceSelfRestart   -> serverSelfRestart();
+                case LocalIntent.intents + LocalIntent.serviceSelfRestart   -> serverSelfRestart(intent);
                 case LocalIntent.intents + LocalIntent.serviceStop          -> serverStop();
                 case LocalIntent.intents + LocalIntent.serviceSelfStop      -> serverSelfStop();
                 case LocalIntent.intents + LocalIntent.notify               -> hasNotify();
@@ -89,17 +89,21 @@ public class FloatWindow extends Service {
             params.height = WindowManager.LayoutParams.WRAP_CONTENT;
             floaty.addView(view, params);
             States.ServiceState = States.state.WorkingAndFloaty;
+            sm.write(IsFloatyOn, true);
         }
         private void serverRestart(){
             serverStop();
             serverStart();
         }
-        private void serverSelfRestart(){}
+        private void serverSelfRestart(Intent intent){
+            if (intent.getBooleanExtra(Intent_ServiceSelfRestart.Key.ISWORK, false)) serverStart();
+        }
         private void serverStop(){
             logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(context), "State:"+States.ServiceState);
             if (States.ServiceState != States.state.WorkingAndFloaty) return;
             floaty.removeView(view);
             States.ServiceState = States.state.Working;
+            sm.write(IsFloatyOn, false);
         }
         private void serverSelfStop(){
             if (States.ServiceState != States.state.None);
@@ -124,6 +128,7 @@ public class FloatWindow extends Service {
         @Override
         public void run() {
             logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop");
+            lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
             String[] temp;
             synchronized (staticQueue.lock){
                 temp = staticQueue.get();
@@ -163,6 +168,7 @@ public class FloatWindow extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        lb = LocalBroadcastManager.getInstance(this);
         context = this;
         logger = new Logger(this);
         sm = new SharedManager(this, SharedManager.ShaderName.Floaty);
@@ -173,6 +179,7 @@ public class FloatWindow extends Service {
         updateFloaty = new Handler(ht_floaty.getLooper());
         MainHandler = new Handler(Looper.getMainLooper());
         startForeground(1, createNotification());
+        lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
 
         TextView tv = view.findViewById(R.id.Tv_Title);
         tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
@@ -189,19 +196,19 @@ public class FloatWindow extends Service {
         iF.addAction(LocalIntentsName.Notify.toString());
         iF.addAction(LocalIntentsName.Update.toString());
 
-        lb = LocalBroadcastManager.getInstance(this);
         lb.registerReceiver(br, iF);
 
         updateFloaty.post(runnable);
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
-    private Notification createNotification(){
+    @NonNull
+    private Notification createNotification() {
         NotificationChannel channel = new NotificationChannel("Floaty foreground", "Floaty foreground", NotificationManager.IMPORTANCE_NONE);
         channel.setDescription(getString(R.string.FloatyNotification));
         NotificationManager nm = getSystemService(NotificationManager.class);
         nm.createNotificationChannel(channel);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Floaty foreground")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.icon)
                 .setContentTitle("AirDMM! is running")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(false)
@@ -214,32 +221,21 @@ public class FloatWindow extends Service {
                 );
         return builder.build();
     }
-    private final ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Notify Bind");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Notify Unbind");
-        }
-    };
-    private static class FloatyBinder extends Binder{ }
-    private FloatyBinder thisBinder = new FloatyBinder();
     @Override
     public IBinder onBind(Intent intent) {
-        return thisBinder;
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        return super.onUnbind(intent);
+        return this.onBind(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Service Already Started");
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(this), "Error: Shouldn't Destroy");
+        startForegroundService(new Intent_ServiceControl(this, this.getClass()));
     }
 }
