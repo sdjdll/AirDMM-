@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -101,6 +102,7 @@ public class FloatWindow extends Service {
             WindowManager.LayoutParams params = new WindowManager.LayoutParams();
             params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
             params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+            params.format = PixelFormat.TRANSLUCENT;
             params.gravity = Gravity.TOP;
             params.width = WindowManager.LayoutParams.WRAP_CONTENT;
             params.height = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -166,8 +168,8 @@ public class FloatWindow extends Service {
         private void toStop(){
             view.post(()->{
                 // Tv清空可能造成抖动但是我没看到
-                Tv_Title.setText("");
-                Tv_Context.setText("");
+//                Tv_Title.setText("");
+//                Tv_Context.setText("");
                 // 颜色
                 Lout.setBackgroundColor(wc);
                 Tv_Title.setTextColor(wtc);
