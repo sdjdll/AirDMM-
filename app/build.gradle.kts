@@ -11,13 +11,13 @@ android {
 
     defaultConfig {
         ndk{
-            abiFilters += listOf("arm64-v8a","x86_64")
+            abiFilters += listOf("arm64-v8a")
         }
         applicationId = "sdjini.AirDMM"
         minSdk = 29
         targetSdk = 36
         versionCode = 4
-        versionName = "4.0.0"
+        versionName = "4.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -25,7 +25,7 @@ android {
                 cppFlags += ""
             }
         }
-        multiDexEnabled = true
+        multiDexEnabled = false
     }
 
     buildTypes {
@@ -37,8 +37,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            multiDexEnabled = false
             ndk{
                 abiFilters += listOf("arm64-v8a")
+            }
+
+        }
+
+        debug {
+            ndk {
+                abiFilters += listOf("arm64-v8a", "x86_64")
             }
         }
     }
