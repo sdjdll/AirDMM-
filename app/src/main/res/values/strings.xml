@@ -17,4 +17,5 @@
     <string name="KwBM">Keywords Blacklist Mode</string>
     <string name="Pod">POD mean "Post on DMM"</string>
     <string name="FloatyNotification">Floaty foreground notification</string>
+    <string name="DelayPosition">Delay Position</string>
 </resources>

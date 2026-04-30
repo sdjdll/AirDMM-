@@ -18,4 +18,5 @@
     <string name="KwBM">关键字黑名单模式</string>
     <string name="Pod">POD(Post on DMM): "在悬浮窗上显示"</string>
     <string name="FloatyNotification">悬浮窗前台服务通知</string>
+    <string name="DelayPosition">显示位置</string>
 </resources>

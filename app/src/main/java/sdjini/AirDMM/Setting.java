@@ -48,19 +48,21 @@ public class Setting extends AppCompatActivity {
 
         findViewById(R.id.Btn_SaveConfig).setOnClickListener(v->{
             EditText et = findViewById(R.id.Et_ActiveColor);
-            floaty.write(ActiveColorKey, et.getText().toString());
-                et = findViewById(R.id.Et_ActiveTextColor);
-            floaty.write(ActiveTextColorKey, et.getText().toString());
-                et = findViewById(R.id.Et_WaitingColor);
-            floaty.write(WaitingColorKey, et.getText().toString());
-                et = findViewById(R.id.Et_WaitingTextColor);
-            floaty.write(WaitingTextColorKey, et.getText().toString());
-                et = findViewById(R.id.Et_KeyWords);
-            notify.write(keywordFilterKey, et.getText().toString());
-                et = findViewById(R.id.Et_PodPackage);
-            notify.write(packageFilterKey, et.getText().toString());
-                et = findViewById(R.id.Et_DelayTime);
-            notify.write(DelayTimeKey, Integer.parseInt(et.getText().toString()));
+                floaty.write(ActiveColorKey, et.getText().toString());
+            et = findViewById(R.id.Et_ActiveTextColor);
+                floaty.write(ActiveTextColorKey, et.getText().toString());
+            et = findViewById(R.id.Et_WaitingColor);
+                floaty.write(WaitingColorKey, et.getText().toString());
+            et = findViewById(R.id.Et_WaitingTextColor);
+                floaty.write(WaitingTextColorKey, et.getText().toString());
+            et = findViewById(R.id.Et_DelayPostion);
+                floaty.write(FloatyPosition, et.getText().toString());
+            et = findViewById(R.id.Et_KeyWords);
+                notify.write(keywordFilterKey, et.getText().toString());
+            et = findViewById(R.id.Et_PodPackage);
+                notify.write(packageFilterKey, et.getText().toString());
+            et = findViewById(R.id.Et_DelayTime);
+                notify.write(DelayTimeKey, Integer.parseInt(et.getText().toString()));
 
             lb.sendBroadcast(new Intent_Update());
         });
@@ -75,7 +77,8 @@ public class Setting extends AppCompatActivity {
             et.setText(floaty.readString(WaitingTextColorKey, getString(R.string.waitingTx)));
         et = findViewById(R.id.Et_DelayTime);
             et.setText(""+floaty.readInt(DelayTimeKey, 500));
-
+        et = findViewById(R.id.Et_DelayPostion);
+            et.setText(floaty.readInt(FloatyPosition,50));
         et = findViewById(R.id.Et_KeyWords);
             et.setText(notify.readString(keywordFilterKey));
         et = findViewById(R.id.Et_PodPackage);

@@ -3,6 +3,7 @@ package sdjini.AirDMM.service;
 import static sdjini.AirDMM.StaticMain.ActiveColorKey;
 import static sdjini.AirDMM.StaticMain.ActiveTextColorKey;
 import static sdjini.AirDMM.StaticMain.DelayTimeKey;
+import static sdjini.AirDMM.StaticMain.FloatyPosition;
 import static sdjini.AirDMM.StaticMain.WaitingColorKey;
 import static sdjini.AirDMM.StaticMain.WaitingTextColorKey;
 import static sdjini.AirDMM.StaticMain.IsFloatyOn;
@@ -25,7 +26,9 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -60,6 +63,7 @@ public class FloatWindow extends Service {
     private Logger logger;
     private Handler updateFloaty, MainHandler;
     private SharedManager sm;
+    private ViewGroup.MarginLayoutParams lp;
     private final Object NotifyLock = new Object();
     private final BroadcastReceiver br = new BroadcastReceiver() {
         @Override
@@ -84,7 +88,7 @@ public class FloatWindow extends Service {
             WindowManager.LayoutParams params = new WindowManager.LayoutParams();
             params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
             params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-            params.gravity = Gravity.CENTER;
+            params.gravity = Gravity.TOP;
             params.width = WindowManager.LayoutParams.WRAP_CONTENT;
             params.height = WindowManager.LayoutParams.WRAP_CONTENT;
             floaty.addView(view, params);
@@ -121,6 +125,10 @@ public class FloatWindow extends Service {
             tv = view.findViewById(R.id.Tv_Context);
             tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
             tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
+            LinearLayout Lout_Floaty = view.findViewById(R.id.Lout_Floaty);
+            lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
+            lp.topMargin = sm.readInt(FloatyPosition, 50);
+            Lout_Floaty.setLayoutParams(lp);
         }
     };
     private LocalBroadcastManager lb;
@@ -187,6 +195,10 @@ public class FloatWindow extends Service {
         tv = view.findViewById(R.id.Tv_Context);
         tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
         tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
+        LinearLayout Lout_Floaty = view.findViewById(R.id.Lout_Floaty);
+        lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
+        lp.topMargin = sm.readInt(FloatyPosition, 50);
+        Lout_Floaty.setLayoutParams(lp);
 
         iF.addAction(LocalIntentsName.ServerStart.toString());
         iF.addAction(LocalIntentsName.ServerRestart.toString());
@@ -228,7 +240,7 @@ public class FloatWindow extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Service Already Started");
+        logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(this), "Service Already Started");
         return super.onStartCommand(intent, flags, startId);
     }
 

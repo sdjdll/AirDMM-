@@ -51,22 +51,27 @@ public class SharedManager {
 
 
     public String readString(String key, String... Default) {
+        assert Default.length <= 1;
         if (Default.length > 0) return sp.getString(key, Default[0]);
         return sp.getString(key,"");
     }
     public int readInt(String key, int... Default){
+        assert Default.length <= 1;
         if (Default.length > 0) return sp.getInt(key, Default[0]);
         return sp.getInt(key,-1);
     }
     public long readLong(String key, long... Default){
+        assert Default.length <= 1;
         if (Default.length > 0) return sp.getLong(key, Default[0]);
         return sp.getLong(key,-1);
     }
     public boolean readBoolean(String key, boolean... Default){
+        assert Default.length <= 1;
         if (Default.length > 0) return sp.getBoolean(key, Default[0]);
         return sp.getBoolean(key,false);
     }
     public float readFloat(String key, float... Default){
+        assert Default.length <= 1;
         if (Default.length > 0) return sp.getFloat(key, Default[0]);
         return sp.getFloat(key,-1f);
     }

@@ -14,5 +14,6 @@ public class StaticMain {
     public static final String WaitingColorKey = "WaitingColorKey";
     public static final String WaitingTextColorKey = "WaitingTextColorKey";
     public static final String IsFloatyOn = "IsFloatyOn";
+    public static final String FloatyPosition = "FloatyPosition";
     public static final CoupleQueue staticQueue = new CoupleQueue(0);
 }
