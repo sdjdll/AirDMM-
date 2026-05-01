@@ -152,7 +152,6 @@ public class FloatWindow extends Service {
     private LinearLayout Lout;
     private final Runnable uiUpper = new Runnable() {
         private String[] couple;
-
         @Override
         public void run() {
             logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop");
@@ -160,6 +159,7 @@ public class FloatWindow extends Service {
             synchronized (staticQueue.lock){
                 couple = staticQueue.get();
             }
+
             if (couple != null) toStart();
             else toStop();
 
