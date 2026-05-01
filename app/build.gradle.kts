@@ -60,6 +60,13 @@ android {
             version = "3.22.1"
         }
     }
+    packaging{
+        resources{
+            excludes += setOf("META-INF/**")
+            excludes += setOf("DebugProbesKt.bin")
+            excludes += setOf("kotlin/**")
+        }
+    }
 }
 
 dependencies {
