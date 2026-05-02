@@ -152,6 +152,7 @@ public class FloatWindow extends Service {
     private LinearLayout Lout;
     private final Runnable uiUpper = new Runnable() {
         private String[] couple;
+
         @Override
         public void run() {
             logger.printAndWrite(Level.STEP, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "updateFloaty Loop");
@@ -162,8 +163,6 @@ public class FloatWindow extends Service {
 
             if (couple != null) toStart();
             else toStop();
-
-            updateFloaty.postDelayed(this, dt);
         }
         private void toStop(){
             view.post(()->{
@@ -180,6 +179,8 @@ public class FloatWindow extends Service {
                     NotifyLock.wait();
                 } catch (InterruptedException e) {
                     logger.printAndWrite(Level.INFO, new Tags.Service.Floaty.FloatyLoop(updateFloaty), "Notify interrupted");
+                } finally {
+                    updateFloaty.post(this);
                 }
             }
         }
@@ -193,6 +194,7 @@ public class FloatWindow extends Service {
                 Tv_Title.setTextColor(atc);
                 Tv_Context.setTextColor(atc);
             });
+            updateFloaty.postDelayed(this, dt);
         }
     };
 
@@ -215,7 +217,7 @@ public class FloatWindow extends Service {
         HandlerThread ht_floaty = new HandlerThread("updateFloaty");
         ht_floaty.start();
         updateFloaty = new Handler(ht_floaty.getLooper());
-        MainHandler = new Handler(Looper.getMainLooper());
+//        MainHandler = new Handler(Looper.getMainLooper());
         startForeground(1, createNotification());
         lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
 
@@ -281,5 +283,8 @@ public class FloatWindow extends Service {
         super.onDestroy();
         logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(this), "Error: Shouldn't Destroy");
         startForegroundService(new Intent_ServiceControl(this, this.getClass()));
+
+        NotifyLock.notify();
+        updateFloaty.removeCallbacks(uiUpper);
     }
 }

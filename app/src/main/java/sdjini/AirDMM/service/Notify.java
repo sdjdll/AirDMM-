@@ -7,28 +7,25 @@ import static sdjini.AirDMM.intents.LocalIntent.update;
 
 import android.app.Notification;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.Arrays;
 
-import sdjini.AirDMM.StaticMain;
-import sdjini.AirDMM.custom.CoupleQueue;
 import sdjini.AirDMM.intents.Intent_Notify;
 import sdjini.AirDMM.intents.Intent_ServiceControl;
-import sdjini.AirDMM.intents.Intent_Update;
 import sdjini.AirDMM.log.Level;
 import sdjini.AirDMM.log.Logger;
 import sdjini.AirDMM.log.Tags;
@@ -48,11 +45,11 @@ public class Notify extends NotificationListenerService {
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()){
                 case intents+update -> Update();
-                default -> Default();
+                case null, default -> Default(intent);
             }
         }
-        private void Default(){
-            logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(context), "Default");
+        private void Default(Intent intent){
+            logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(context), "Default","不是哥们你注册了个啥玩意？",intent.getAction());
         }
         private void Update(){
             logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Update");
@@ -84,8 +81,10 @@ public class Notify extends NotificationListenerService {
 
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
+    @NonNull
+    @Contract("null -> new")
     private String[] getFilterArray(String raw){
-        assert raw != null;
+        if (raw == null) return new String[0];
         return raw.split(",");
     }
 
@@ -141,10 +140,11 @@ public class Notify extends NotificationListenerService {
 
     private native String stringFormat(String raw);
     private String stringFormatJ(String raw) {
-        if (raw == null) return null;
-        StringBuilder sb = new StringBuilder(raw.length());
+        int rawL = raw!=null? raw.length() : 0;
+        if (rawL == 0) return null;
+        StringBuilder sb = new StringBuilder(rawL);
         boolean lastWasInvisible = false;
-        for (int i = 0; i < raw.length(); ) {
+        for (int i = 0; i < rawL; ) {
             int codePoint = raw.codePointAt(i);
             if (isInvisible(codePoint)) lastWasInvisible = true;
             else {
@@ -157,7 +157,7 @@ public class Notify extends NotificationListenerService {
 
             i += Character.charCount(codePoint);
         }
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private boolean isInvisible(int codePoint) {

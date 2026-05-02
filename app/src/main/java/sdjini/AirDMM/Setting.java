@@ -9,17 +9,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Switch;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import java.util.Set;
 
 import sdjini.AirDMM.intents.Intent_ServerRestart;
 import sdjini.AirDMM.intents.Intent_ServiceControl;

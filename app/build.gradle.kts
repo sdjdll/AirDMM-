@@ -17,12 +17,12 @@ android {
         minSdk = 29
         targetSdk = 36
         versionCode = 4
-        versionName = "4.0.3"
+        versionName = "4.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += ""
+                cppFlags += "-Os -fvisibility=hidden -ffunction-sections -fdata-sections"
             }
         }
         multiDexEnabled = false
@@ -41,7 +41,6 @@ android {
             ndk{
                 abiFilters += listOf("arm64-v8a")
             }
-
         }
 
         debug {
@@ -51,8 +50,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     externalNativeBuild {
         cmake {
@@ -65,13 +64,14 @@ android {
             excludes += setOf("META-INF/**")
             excludes += setOf("DebugProbesKt.bin")
             excludes += setOf("kotlin/**")
+            excludes += setOf("res/**")
         }
     }
 }
 
 dependencies {
     implementation(libs.appcompat)
-    implementation(libs.material)
+    implementation(libs.lbm)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
