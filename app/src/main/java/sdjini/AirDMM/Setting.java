@@ -3,6 +3,7 @@ package sdjini.AirDMM;
 import static sdjini.AirDMM.StaticMain.*;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,7 +14,6 @@ import android.widget.EditText;
 import android.widget.Switch;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -25,7 +25,7 @@ import sdjini.AirDMM.service.FloatWindow;
 import sdjini.AirDMM.service.Notify;
 import sdjini.AirDMM.shared.SharedManager;
 
-public class Setting extends AppCompatActivity {
+public class Setting extends Activity {
     private LocalBroadcastManager lb;
     private SharedManager floaty,notify;
     @Override

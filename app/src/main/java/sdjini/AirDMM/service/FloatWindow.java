@@ -23,7 +23,6 @@ import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,13 +65,7 @@ public class FloatWindow extends Service {
     private SharedManager sm;
     private ViewGroup.MarginLayoutParams lp;
     private final Object NotifyLock = new Object();
-    private int wc,
-            wtc,
-            ac,
-            atc,
-            dt,
-            fp;
-//            non = getColor(R.color.none);
+    private int wc, wtc, ac, atc, dt, fp;
     private final BroadcastReceiver br = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -170,6 +163,7 @@ public class FloatWindow extends Service {
 //                Tv_Title.setText("");
 //                Tv_Context.setText("");
                 // 颜色
+//                Lout.setBackground(getDrawable(R.drawable.rd2));
                 Lout.setBackgroundColor(wc);
                 Tv_Title.setTextColor(wtc);
                 Tv_Context.setTextColor(wtc);
@@ -190,6 +184,7 @@ public class FloatWindow extends Service {
                 Tv_Title.setText(couple[0]);
                 Tv_Context.setText(couple[1]);
                 // 颜色
+//                Lout.setBackground(getDrawable(R.drawable.rd2));
                 Lout.setBackgroundColor(ac);
                 Tv_Title.setTextColor(atc);
                 Tv_Context.setTextColor(atc);

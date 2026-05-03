@@ -10,9 +10,10 @@ material = "1.10.0"
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+appcompat = { group = "androidx.appcompat.app.AppCompatActivity", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 lbm = {group =  "androidx.localbroadcastmanager", name = "localbroadcastmanager", version = "1.1.0"}
+core = {group = "androidx.core", name="core", version = "1.13.1"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

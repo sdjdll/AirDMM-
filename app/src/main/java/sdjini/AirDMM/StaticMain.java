@@ -1,5 +1,7 @@
 package sdjini.AirDMM;
 
+import java.util.logging.Handler;
+
 import sdjini.AirDMM.custom.CoupleQueue;
 
 
@@ -16,4 +18,5 @@ public class StaticMain {
     public static final String IsFloatyOn = "IsFloatyOn";
     public static final String FloatyPosition = "FloatyPosition";
     public static final CoupleQueue staticQueue = new CoupleQueue(0);
+    public static Handler FloatWindowHandler;
 }

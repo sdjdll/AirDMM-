@@ -7,7 +7,8 @@
         android:id="@+id/Lout_Floaty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/rd2">
 
         <TextView
             android:id="@+id/Tv_Title"
