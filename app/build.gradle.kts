@@ -17,12 +17,12 @@ android {
         minSdk = 29
         targetSdk = 36
         versionCode = 4
-        versionName = "4.0.4"
+        versionName = "4.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += "-Os -fvisibility=hidden -ffunction-sections -fdata-sections"
+                cppFlags += "-Oz -fvisibility=hidden -ffunction-sections -fdata-sections"
             }
         }
         multiDexEnabled = false
@@ -70,8 +70,6 @@ android {
 }
 
 dependencies {
-//    implementation(libs.appcompat)
-    implementation(libs.lbm)
     implementation(libs.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

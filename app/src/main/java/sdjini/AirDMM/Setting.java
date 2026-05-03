@@ -1,6 +1,7 @@
 package sdjini.AirDMM;
 
 import static sdjini.AirDMM.StaticMain.*;
+import static sdjini.AirDMM.service.FloatWindow.fws;
 
 import android.Manifest;
 import android.app.Activity;
@@ -15,32 +16,29 @@ import android.widget.Switch;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import sdjini.AirDMM.intents.Intent_ServerRestart;
-import sdjini.AirDMM.intents.Intent_ServiceControl;
-import sdjini.AirDMM.intents.Intent_Update;
-import sdjini.AirDMM.intents.LocalIntent;
 import sdjini.AirDMM.service.FloatWindow;
 import sdjini.AirDMM.service.Notify;
 import sdjini.AirDMM.shared.SharedManager;
 
 public class Setting extends Activity {
-    private LocalBroadcastManager lb;
     private SharedManager floaty,notify;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        lb = LocalBroadcastManager.getInstance(this);
         floaty = new SharedManager(this, SharedManager.ShaderName.Floaty);
         notify = new SharedManager(this, SharedManager.ShaderName.Notify);
 
         permissions();
 
         setContentView(R.layout.setting);
-        findViewById(R.id.Btn_Start).setOnClickListener(v -> lb.sendBroadcast(new Intent_ServiceControl(LocalIntent.LocalIntentsName.ServerStart)));
-        findViewById(R.id.Btn_Restart).setOnClickListener(v -> lb.sendBroadcast(new Intent_ServerRestart(this, FloatWindow.class)));
-        findViewById(R.id.Btn_Stop).setOnClickListener(v -> lb.sendBroadcast(new Intent_ServiceControl(LocalIntent.LocalIntentsName.ServiceStop)));
+        try{
+            findViewById(R.id.Btn_Start).setOnClickListener(v -> fws.serverStart());
+            findViewById(R.id.Btn_Restart).setOnClickListener(v -> fws.serverRestart());
+            findViewById(R.id.Btn_Stop).setOnClickListener(v -> fws.serverStop());
+        }catch (NullPointerException e){
+            startForegroundService(new Intent(this, FloatWindow.class));
+        }
 
         findViewById(R.id.Btn_SaveConfig).setOnClickListener(v->{
             EditText et = findViewById(R.id.Et_ActiveColor);
@@ -60,7 +58,11 @@ public class Setting extends Activity {
             et = findViewById(R.id.Et_DelayTime);
             floaty.write(DelayTimeKey, Integer.parseInt(et.getText().toString()));
 
-            lb.sendBroadcast(new Intent_Update());
+            try{
+                fws.update();
+            }catch (NullPointerException e){
+                startForegroundService(new Intent(this, FloatWindow.class));
+            }
         });
 
         EditText et = findViewById(R.id.Et_ActiveColor);
@@ -83,7 +85,11 @@ public class Setting extends Activity {
         Switch sw = findViewById(R.id.Swc_KeywordsBlacklistMode);
         sw.setOnCheckedChangeListener((c,b)-> {
             notify.write(OnKeywordFilterKey, b);
-            lb.sendBroadcast(new Intent_Update());
+            try{
+                fws.update();
+            }catch (NullPointerException e){
+                startForegroundService(new Intent(this, FloatWindow.class));
+            }
         });
         sw.setChecked(notify.readBoolean(OnKeywordFilterKey, false));
 
@@ -91,7 +97,11 @@ public class Setting extends Activity {
         sw.setOnCheckedChangeListener((c,b)-> {
             notify.write(OnPackageFilterKey, b);
             c.setText(b ? R.string.PodBM : R.string.PodWM);
-            lb.sendBroadcast(new Intent_Update());
+            try{
+                fws.update();
+            }catch (NullPointerException e){
+                startForegroundService(new Intent(this, FloatWindow.class));
+            }
         });
         sw.setChecked(notify.readBoolean(OnPackageFilterKey, true));
         sw.setText(sw.isEnabled() ? R.string.PodBM : R.string.PodWM);

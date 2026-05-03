@@ -19,4 +19,12 @@ public class StaticMain {
     public static final String FloatyPosition = "FloatyPosition";
     public static final CoupleQueue staticQueue = new CoupleQueue(0);
     public static Handler FloatWindowHandler;
+    public static int Flags = 0;
+    public static final int serverStart = 1;
+    public static final int serverRestart = 2;
+    public static final int serverSelfRestart = 4;
+    public static final int serverStop = 8;
+    public static final int serverSelfStop = 16;
+    public static final int notify = 32;
+    public static final int update = 64;
 }

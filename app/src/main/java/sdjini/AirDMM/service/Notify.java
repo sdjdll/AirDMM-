@@ -1,15 +1,11 @@
 package sdjini.AirDMM.service;
 
 import static sdjini.AirDMM.StaticMain.*;
-import static sdjini.AirDMM.intents.LocalIntent.LocalIntentsName;
-import static sdjini.AirDMM.intents.LocalIntent.intents;
-import static sdjini.AirDMM.intents.LocalIntent.update;
+import static sdjini.AirDMM.service.FloatWindow.fws;
 
 import android.app.Notification;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -18,14 +14,11 @@ import android.service.notification.StatusBarNotification;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.jetbrains.annotations.Contract;
 
 import java.util.Arrays;
 
-import sdjini.AirDMM.intents.Intent_Notify;
-import sdjini.AirDMM.intents.Intent_ServiceControl;
 import sdjini.AirDMM.log.Level;
 import sdjini.AirDMM.log.Logger;
 import sdjini.AirDMM.log.Tags;
@@ -37,33 +30,21 @@ public class Notify extends NotificationListenerService {
     private boolean OnKeywordFilter = false;
     private boolean OnPackageFilter = false;
     private SharedManager sm;
-    private LocalBroadcastManager lb;
     private Logger logger;
     private Context context;
-    private final BroadcastReceiver br = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            switch (intent.getAction()){
-                case intents+update -> Update();
-                case null, default -> Default(intent);
-            }
-        }
-        private void Default(Intent intent){
-            logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(context), "Default","不是哥们你注册了个啥玩意？",intent.getAction());
-        }
-        private void Update(){
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Update");
-            keywordFilter = getFilterArray(sm.readString(keywordFilterKey));
-            packageFilter = getFilterArray(sm.readString(packageFilterKey));
-            OnKeywordFilter = sm.readBoolean(OnKeywordFilterKey);
-            OnPackageFilter = sm.readBoolean(OnPackageFilterKey);
-        }
-    };
+    public static Notify notify;
+    public void Update(){
+        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(context), "Update");
+        keywordFilter = getFilterArray(sm.readString(keywordFilterKey));
+        packageFilter = getFilterArray(sm.readString(packageFilterKey));
+        OnKeywordFilter = sm.readBoolean(OnKeywordFilterKey);
+        OnPackageFilter = sm.readBoolean(OnPackageFilterKey);
+    }
     @Override
     public void onCreate() {
         super.onCreate();
         staticQueue.INIT(10);
-        lb = LocalBroadcastManager.getInstance(this);
+        notify = this;
         sm = new SharedManager(this, SharedManager.ShaderName.Notify);
         logger = new Logger(this);
         context = this;
@@ -72,12 +53,8 @@ public class Notify extends NotificationListenerService {
         packageFilter = getFilterArray(sm.readString(packageFilterKey));
         OnKeywordFilter = sm.readBoolean(OnKeywordFilterKey);
         OnPackageFilter = sm.readBoolean(OnPackageFilterKey);
-        IntentFilter iF = new IntentFilter();
-        iF.addAction(LocalIntentsName.ServiceSelfRestart.toString());
-        iF.addAction(LocalIntentsName.Update.toString());
-        lb.registerReceiver(br,iF);
 
-        startForegroundService(new Intent_ServiceControl(this, FloatWindow.class));
+        startForegroundService(new Intent(this, FloatWindow.class));
 
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
     }
@@ -91,6 +68,7 @@ public class Notify extends NotificationListenerService {
     @Override
     public void onDestroy() {
         staticQueue.destroy();
+        notify = null;
         super.onDestroy();
     }
 
@@ -118,8 +96,13 @@ public class Notify extends NotificationListenerService {
         synchronized (staticQueue.lock){
             staticQueue.add(Title,Content);
         }
-        lb.sendBroadcast(new Intent_Notify());
-        startForegroundService(new Intent_ServiceControl(this, FloatWindow.class));
+        try{
+            fws.hasNotify();
+        }catch (NullPointerException e){
+            logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(this), "FloatWindow is Stopped");
+        } finally {
+            startForegroundService(new Intent(this, FloatWindow.class));
+        }
     }
     @Nullable
     private StatusBarNotification filter(StatusBarNotification sbn){

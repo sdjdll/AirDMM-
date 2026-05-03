@@ -7,6 +7,7 @@ import static sdjini.AirDMM.StaticMain.FloatyPosition;
 import static sdjini.AirDMM.StaticMain.WaitingColorKey;
 import static sdjini.AirDMM.StaticMain.WaitingTextColorKey;
 import static sdjini.AirDMM.StaticMain.IsFloatyOn;
+import static sdjini.AirDMM.service.Notify.notify;
 import static sdjini.AirDMM.StaticMain.staticQueue;
 
 import android.app.Notification;
@@ -14,17 +15,19 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.RectF;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.RoundedCorner;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -33,14 +36,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import sdjini.AirDMM.R;
 import sdjini.AirDMM.Setting;
-import sdjini.AirDMM.intents.Intent_ServiceControl;
-import sdjini.AirDMM.intents.Intent_ServiceSelfRestart;
-import sdjini.AirDMM.intents.LocalIntent.LocalIntentsName;
-import sdjini.AirDMM.intents.LocalIntent;
 import sdjini.AirDMM.log.Level;
 import sdjini.AirDMM.log.Logger;
 import sdjini.AirDMM.log.Tags;
@@ -55,91 +53,73 @@ public class FloatWindow extends Service {
         }
         public static state ServiceState = state.None;
     }
+    public static FloatWindow fws;
 
     private WindowManager floaty;
     private View view;
-    private IntentFilter iF = new IntentFilter();
     private Context context;
     private Logger logger;
     private Handler updateFloaty, MainHandler;
     private SharedManager sm;
     private ViewGroup.MarginLayoutParams lp;
-    private final Object NotifyLock = new Object();
+    public final Object NotifyLock = new Object();
     private int wc, wtc, ac, atc, dt, fp;
-    private final BroadcastReceiver br = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty Intent", intent.getAction());
-            assert intent.getAction()  != null;
-            switch (intent.getAction()){
-                case LocalIntent.intents + LocalIntent.serverStart          -> serverStart();
-                case LocalIntent.intents + LocalIntent.serverRestart        -> serverRestart();
-                case LocalIntent.intents + LocalIntent.serviceSelfRestart   -> serverSelfRestart(intent);
-                case LocalIntent.intents + LocalIntent.serviceStop          -> serverStop();
-                case LocalIntent.intents + LocalIntent.serviceSelfStop      -> serverSelfStop();
-                case LocalIntent.intents + LocalIntent.notify               -> hasNotify();
-                case LocalIntent.intents + LocalIntent.update               -> update();
-                default -> Default();
-            }
+    public void serverStart(){
+        if (States.ServiceState == States.state.WorkingAndFloaty) return;
+        ac  = Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg)));
+        atc = Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx)));
+        wc  = Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg)));
+        wtc = Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx)));
+        dt = sm.readInt(DelayTimeKey, 500);
+        fp = sm.readInt(FloatyPosition, 50);
+        logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty start");
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+        params.format = PixelFormat.TRANSLUCENT;
+        params.gravity = Gravity.TOP;
+        params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        floaty.addView(view, params);
+        States.ServiceState = States.state.WorkingAndFloaty;
+        sm.write(IsFloatyOn, true);
+    }
+    public void serverRestart(){
+        serverStop();
+        serverStart();
+    }
+    public void serverSelfRestart(boolean b){
+        if (b) serverRestart();
+    }
+    public void serverStop(){
+        logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(context), "State:"+States.ServiceState);
+        if (States.ServiceState != States.state.WorkingAndFloaty) return;
+        floaty.removeView(view);
+        States.ServiceState = States.state.Working;
+        sm.write(IsFloatyOn, false);
+    }
+    public void serverSelfStop(){
+        if (States.ServiceState != States.state.None);
+    }
+    public void hasNotify(){
+        synchronized (NotifyLock){
+            NotifyLock.notify();
         }
-        private void Default(){}
-        private void serverStart(){
-            if (States.ServiceState == States.state.WorkingAndFloaty) return;
-            ac  = Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg)));
-            atc = Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx)));
-            wc  = Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg)));
-            wtc = Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx)));
-            dt = sm.readInt(DelayTimeKey, 500);
-            fp = sm.readInt(FloatyPosition, 50);
-            logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(), "Floaty start");
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-            params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-            params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-            params.format = PixelFormat.TRANSLUCENT;
-            params.gravity = Gravity.TOP;
-            params.width = WindowManager.LayoutParams.WRAP_CONTENT;
-            params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-            floaty.addView(view, params);
-            States.ServiceState = States.state.WorkingAndFloaty;
-            sm.write(IsFloatyOn, true);
-        }
-        private void serverRestart(){
-            serverStop();
-            serverStart();
-        }
-        private void serverSelfRestart(Intent intent){
-            if (intent.getBooleanExtra(Intent_ServiceSelfRestart.Key.ISWORK, false)) serverStart();
-        }
-        private void serverStop(){
-            logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(context), "State:"+States.ServiceState);
-            if (States.ServiceState != States.state.WorkingAndFloaty) return;
-            floaty.removeView(view);
-            States.ServiceState = States.state.Working;
-            sm.write(IsFloatyOn, false);
-        }
-        private void serverSelfStop(){
-            if (States.ServiceState != States.state.None);
-        }
-        private void hasNotify(){
-            synchronized (NotifyLock){
-                NotifyLock.notify();
-            }
-        }
+    }
 
-        private void update(){
-            TextView tv = view.findViewById(R.id.Tv_Title);
-            tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
-            tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
-            tv = view.findViewById(R.id.Tv_Context);
-            tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
-            tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
-            LinearLayout Lout_Floaty = view.findViewById(R.id.Lout_Floaty);
-            lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
-            lp.topMargin = fp;
-            Lout_Floaty.setLayoutParams(lp);
-        }
-    };
-    private LocalBroadcastManager lb;
+    public void update(){
+        TextView tv = view.findViewById(R.id.Tv_Title);
+        tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
+        tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
+        tv = view.findViewById(R.id.Tv_Context);
+        tv.setBackgroundColor(Color.parseColor(sm.readString(WaitingColorKey, getString(R.string.waitingBg))));
+        tv.setTextColor(Color.parseColor(sm.readString(WaitingTextColorKey, getString(R.string.waitingTx))));
+        LinearLayout Lout_Floaty = view.findViewById(R.id.Lout_Floaty);
+        lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
+        lp.topMargin = fp;
+        Lout_Floaty.setLayoutParams(lp);
+        notify.Update();
+    }
     private TextView Tv_Title;
     private TextView Tv_Context;
     private LinearLayout Lout;
@@ -197,9 +177,9 @@ public class FloatWindow extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        lb = LocalBroadcastManager.getInstance(this);
         context = this;
         logger = new Logger(this);
+        fws = this;
         sm = new SharedManager(this, SharedManager.ShaderName.Floaty);
         ac  = Color.parseColor(sm.readString(ActiveColorKey, getString(R.string.actingBg)));
         atc = Color.parseColor(sm.readString(ActiveTextColorKey, getString(R.string.actingTx)));
@@ -214,7 +194,7 @@ public class FloatWindow extends Service {
         updateFloaty = new Handler(ht_floaty.getLooper());
 //        MainHandler = new Handler(Looper.getMainLooper());
         startForeground(1, createNotification());
-        lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
+        serverSelfRestart(sm.readBoolean(IsFloatyOn));
 
         Tv_Title = view.findViewById(R.id.Tv_Title);
         Tv_Context = view.findViewById(R.id.Tv_Context);
@@ -227,16 +207,6 @@ public class FloatWindow extends Service {
         lp = (ViewGroup.MarginLayoutParams) Lout_Floaty.getLayoutParams();
         lp.topMargin = fp;
         Lout_Floaty.setLayoutParams(lp);
-
-        iF.addAction(LocalIntentsName.ServerStart.toString());
-        iF.addAction(LocalIntentsName.ServerRestart.toString());
-        iF.addAction(LocalIntentsName.ServiceSelfRestart.toString());
-        iF.addAction(LocalIntentsName.ServiceStop.toString());
-        iF.addAction(LocalIntentsName.ServiceSelfStop.toString());
-        iF.addAction(LocalIntentsName.Notify.toString());
-        iF.addAction(LocalIntentsName.Update.toString());
-
-        lb.registerReceiver(br, iF);
 
         updateFloaty.post(uiUpper);
         logger.printAndWrite(Level.INFO, new Tags.Service.ServiceAction(this), "Initialized");
@@ -269,7 +239,7 @@ public class FloatWindow extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         logger.printAndWrite(Level.STEP, new Tags.Service.ServiceAction(this), "Service Already Started");
-        lb.sendBroadcast(new Intent_ServiceSelfRestart(sm.readBoolean(IsFloatyOn)));
+        serverSelfRestart(sm.readBoolean(IsFloatyOn));
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -277,8 +247,8 @@ public class FloatWindow extends Service {
     public void onDestroy() {
         super.onDestroy();
         logger.printAndWrite(Level.ERROR, new Tags.Service.ServiceAction(this), "Error: Shouldn't Destroy");
-        startForegroundService(new Intent_ServiceControl(this, this.getClass()));
-
+        startForegroundService(new Intent(this, this.getClass()));
+        fws = null;
         NotifyLock.notify();
         updateFloaty.removeCallbacks(uiUpper);
     }
